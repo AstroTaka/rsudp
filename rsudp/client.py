@@ -203,9 +203,23 @@ def run(settings, debug):
 				deconv = 'CHAN'
 		else:
 			deconv = False
+# AstroTaka -----------------
+		if settings['plot']['only_detect']:
+			only_detect = settings['plot']['only_detect']
+		else:
+			only_detect = False
+		if settings['plot']['only_alarm']:
+			only_alarm = settings['plot']['only_alarm']
+		else:
+			only_alarm = False
+# ---------------------------
+
 		pq = mk_q()
 		PLOTTER = Plot(cha=cha, seconds=sec, spectrogram=spec,
 						fullscreen=full, kiosk=kiosk, deconv=deconv, q=pq,
+# AstroTaka -----------------
+						only_detect = only_detect, only_alarm = only_alarm,
+# ---------------------------
 						screencap=screencap, alert=alert, testing=TESTING)
 		# no mk_p() here because the plotter must be controlled by the main thread (this one)
 

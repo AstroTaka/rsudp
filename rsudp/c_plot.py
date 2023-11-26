@@ -115,6 +115,9 @@ class Plot:
 				 seconds=30, spectrogram=True,
 				 fullscreen=False, kiosk=False,
 				 deconv=False, screencap=False,
+# AstroTaka -----------------
+				 only_detect=False, only_alarm=False,
+# ---------------------------
 				 alert=True, testing=False):
 		"""
 		Initialize the plot process.
@@ -172,6 +175,10 @@ class Plot:
 		self.fgcolor = '0.8' # axis and label color
 		self.linecolor = '#c28285' # seismogram color
 
+# AstroTaka -----------------
+		self.detecting = False
+# ---------------------------
+
 		printM('Starting.', self.sender)
 
 	def deconvolve(self):
@@ -198,6 +205,9 @@ class Plot:
 			rs.producer = False
 
 		elif 'ALARM' in str(d):
+# AstroTaka -----------------
+			self.detecting = True
+# ---------------------------
 			self.events += 1		# add event to count
 			self.save_timer -= 1	# don't push the save time forward if there are a large number of alarm events
 			event = [self.save_timer + int(self.save_pct*self.pkts_in_period),
@@ -684,8 +694,15 @@ class Plot:
 			i += 1
 		self.stream = rs.copy(self.stream)	# essential, otherwise the stream has a memory leak
 		self.raw = rs.copy(self.raw)		# and could eventually crash the machine
-		self.deconvolve()
-		self.update_plot()
+# AstroTaka -----------------
+		#self.deconvolve()
+		#self.update_plot()
+		if((self.only_detect && self.detecting) ||
+	 	   (self.only_alarm && self.save && (self.save_timer > self.save[0][0])) ||
+		   (!self.only_detect && !self.only_alarm)):
+			self.deconvolve()
+			self.update_plot()
+# ---------------------------
 		if u >= 0:				# avoiding a matplotlib broadcast error
 			self.figloop()
 
@@ -693,6 +710,9 @@ class Plot:
 			# save the plot
 			if (self.save_timer > self.save[0][0]):
 				self._eventsave()
+# AstroTaka -----------------
+				self.detecting = False
+# ---------------------------
 		u = 0
 		time.sleep(0.005)		# wait a ms to see if another packet will arrive
 		sys.stdout.flush()
