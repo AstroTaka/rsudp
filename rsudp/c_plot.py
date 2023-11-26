@@ -176,7 +176,7 @@ class Plot:
 		self.linecolor = '#c28285' # seismogram color
 
 # AstroTaka -----------------
-		self.detec_count = 0
+		self.detect_count = 0
 		self.only_detect = only_detect
 		self.only_alart = only_alart
 # ---------------------------
