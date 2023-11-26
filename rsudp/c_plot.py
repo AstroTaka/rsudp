@@ -34,6 +34,10 @@ try:		# test for matplotlib and exit if import fails
 	import matplotlib.image as mpimg
 	from matplotlib import rcParams
 	from matplotlib.ticker import EngFormatter
+# AstroTaka -----------------
+	from matplotlib.ticker import ScalarFormatter
+	from matplotlib.ticker import LogFormatter
+# ---------------------------
 	rcParams['toolbar'] = 'None'
 	plt.ion()
 	MPL = True
@@ -275,6 +279,8 @@ class Plot:
 		event = self.save.pop()
 		self.save.reverse()
 
+# AstroTaka -----------------
+		'''
 		event_time_str = event[1].strftime('%Y-%m-%d-%H%M%S')				# event time for filename
 		title_time_str = event[1].strftime('%Y-%m-%d %H:%M:%S.%f')[:22]		# pretty event time for plot
 
@@ -282,6 +288,16 @@ class Plot:
 		self.fig.suptitle('%s.%s detected event - %s UTC' # title
 						  % (self.net, self.stn, title_time_str),
 						  fontsize=14, color=self.fgcolor, x=0.52)
+		'''
+		event_time_str = (event[1]+(3600*9)).strftime('%Y-%m-%d-%H%M%S')				# event time for filename
+		title_time_str = (event[1]+(3600*9)).strftime('%Y/%m/%d %H:%M:%S.%f')[:22]		# pretty event time for plot
+
+		# change title (just for a moment)
+		#self.fig.suptitle('%s.%s detected event - %s JST' # title
+		self.fig.suptitle('%s.%s 地震検知 - %s JST' # title
+						  % (self.net, self.stn, title_time_str),
+						  fontsize=15, color=self.fgcolor, x=0.52, fontname='MotoyaLMaru')
+# ---------------------------
 
 		# save figure
 		self.savefig(event_time=event[1], event_time_str=event_time_str)
@@ -358,7 +374,10 @@ class Plot:
 			self.ax[0].set_facecolor(self.bgcolor)
 			self.ax[0].tick_params(colors=self.fgcolor, labelcolor=self.fgcolor)
 			self.ax[0].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-			self.ax[0].yaxis.set_major_formatter(EngFormatter(unit='%s' % self.unit.lower()))
+# AstroTaka -----------------
+			#self.ax[0].yaxis.set_major_formatter(EngFormatter(unit='%s' % self.unit.lower()))
+			self.ax[0].yaxis.set_major_formatter(ScalarFormatter())
+# ---------------------------
 			if self.spectrogram:
 				self.ax.append(self.fig.add_subplot(self.num_chans*self.mult,
 								1, 2, label=str(2)))#, sharex=ax[0]))
@@ -409,9 +428,16 @@ class Plot:
 		Setting up axes and artists.
 		'''
 		# calculate times
+# AstroTaka -----------------
+		'''
 		start = np.datetime64(self.stream[0].stats.endtime
 							  )-np.timedelta64(self.seconds, 's')	# numpy time
 		end = np.datetime64(self.stream[0].stats.endtime)	# numpy time
+		'''
+		start = np.datetime64(self.stream[0].stats.endtime+(3600*9)
+							  )-np.timedelta64(self.seconds, 's')	# numpy time
+		end = np.datetime64(self.stream[0].stats.endtime+(3600*0))	# numpy time
+# ---------------------------
 
 		im = mpimg.imread(pr.resource_filename('rsudp', os.path.join('img', 'version1-01-small.png')))
 		self.imax = self.fig.add_axes([0.015, 0.944, 0.2, 0.056], anchor='NW') # [left, bottom, right, top]
@@ -427,10 +453,28 @@ class Plot:
 						  self.stream[i].data[int(-self.sps*(self.seconds-(comp/2))):-int(self.sps*(comp/2))]):]
 			mean = int(round(np.mean(self.stream[i].data)))
 			# add artist to lines list
+# AstroTaka -----------------
+			'''
 			self.lines.append(self.ax[i*self.mult].plot(r,
 							  np.nan*(np.zeros(len(r))),
 							  label=self.stream[i].stats.channel, color=self.linecolor,
 							  lw=0.45)[0])
+			'''
+			tmp = self.stream[i].stats.channel
+			if tmp == 'EHZ':
+				tmp = '高感度上下'
+			elif tmp == 'ENE':
+				tmp = '低感度東西'
+			elif tmp == 'ENN':
+				tmp = '低感度北南'
+			elif tmp == 'ENZ':
+				tmp = '低感度上下'
+
+			self.lines.append(self.ax[i*self.mult].plot(r,
+							  np.nan*(np.zeros(len(r))),
+							  label=tmp, color=self.linecolor,
+							  lw=0.45)[0])
+# ---------------------------
 			# set axis limits
 			self.ax[i*self.mult].set_xlim(left=start.astype(datetime),
 										  right=end.astype(datetime))
@@ -441,7 +485,10 @@ class Plot:
 			# we can set line plot labels here, but not imshow labels
 			ylabel = self.stream[i].stats.units.strip().capitalize() if (' ' in self.stream[i].stats.units) else self.stream[i].stats.units
 			self.ax[i*self.mult].set_ylabel(ylabel, color=self.fgcolor)
-			self.ax[i*self.mult].legend(loc='upper left')	# legend and location
+# AstroTaka -----------------
+			#self.ax[i*self.mult].legend(loc='upper left')	# legend and location
+			self.ax[i*self.mult].legend(loc='upper left', prop={"family":"MotoyaLMaru", 'size': 11})	# legend and location
+# ---------------------------
 			if self.spectrogram:		# if the user wants a spectrogram, plot it
 				# add spectrogram to axes list
 				sg = self.ax[1].specgram(self.stream[i].data, NFFT=8, pad_to=8,
@@ -517,7 +564,10 @@ class Plot:
 					unit = rs.UNITS['ACC'][1]
 				else:
 					unit = rs.UNITS['CHAN'][1]
-				self.ax[i*self.mult].yaxis.set_major_formatter(EngFormatter(unit='%s' % unit.lower()))
+# AstroTaka -----------------
+				#self.ax[i*self.mult].yaxis.set_major_formatter(EngFormatter(unit='%s' % unit.lower()))
+				self.ax[i*self.mult].yaxis.set_major_formatter(ScalarFormatter())
+# ---------------------------
 
 
 	def _draw_lines(self, i, start, end, mean):
@@ -569,7 +619,10 @@ class Plot:
 		self.ax[i*self.mult+1].tick_params(axis='x', which='both',
 				bottom=False, top=False, labelbottom=False)
 		self.ax[i*self.mult+1].set_ylabel('Frequency (Hz)', color=self.fgcolor)
-		self.ax[i*self.mult+1].set_xlabel('Time (UTC)', color=self.fgcolor)
+# AstroTaka -----------------
+		#self.ax[i*self.mult+1].set_xlabel('Time (UTC)', color=self.fgcolor)
+		self.ax[i*self.mult+1].set_xlabel('Time (JST)', color=self.fgcolor)
+# ---------------------------
 
 
 	def update_plot(self):
@@ -580,9 +633,16 @@ class Plot:
 		This has the effect of making the plot update once per second.
 		'''
 		obstart = self.stream[0].stats.endtime - timedelta(seconds=self.seconds)	# obspy time
+# AstroTaka -----------------
+		'''
 		start = np.datetime64(self.stream[0].stats.endtime
 							  )-np.timedelta64(self.seconds, 's')	# numpy time
 		end = np.datetime64(self.stream[0].stats.endtime)	# numpy time
+		'''
+		start = np.datetime64(self.stream[0].stats.endtime+(3600*9)
+							  )-np.timedelta64(self.seconds, 's')	# numpy time
+		end = np.datetime64(self.stream[0].stats.endtime+(3600*9))	# numpy time
+# ---------------------------
 		self.raw = self.raw.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 		self.stream = self.stream.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 		i = 0
@@ -594,7 +654,10 @@ class Plot:
 				self._update_specgram(i, mean)
 			else:
 				# also can't be in the setup function
-				self.ax[i*self.mult].set_xlabel('Time (UTC)', color=self.fgcolor)
+# AstroTaka -----------------
+				#self.ax[i*self.mult].set_xlabel('Time (UTC)', color=self.fgcolor)
+				self.ax[i*self.mult].set_xlabel('Time (JST)', color=self.fgcolor)
+# ---------------------------
 
 
 	def figloop(self):

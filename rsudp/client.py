@@ -26,7 +26,9 @@ from rsudp.c_rsam import RSAM
 from rsudp.c_testing import Testing
 from rsudp.t_testdata import TestData
 import pkg_resources as pr
-
+# AstroTaka -----------------
+from rsudp.c_line import LINE
+# ---------------------------
 
 DESTINATIONS, THREADS = [], []
 PROD = False
@@ -315,6 +317,16 @@ def run(settings, debug):
 								   send_images=send_images, extra_text=extra_text,
 								   sender=sender, testing=TESTING)
 			mk_p(TELEGRAM)
+
+# AstroTaka -----------------
+	if settings['line']['enabled']:
+		token = settings['line']['token']
+		send_images = settings['line']['send_images']
+		
+		q = mk_q()
+		line = LINE(q=q, token=token, send_images=send_images)
+		mk_p(line)
+# ---------------------------
 
 	if settings['rsam']['enabled']:
 		# put settings in namespace

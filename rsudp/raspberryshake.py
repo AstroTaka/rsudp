@@ -36,7 +36,11 @@ UNITS = {'ACC'	: ['Acceleration', 'm/s$^2$'],
 		 'GRAV'	: ['Earth gravity', ' g'],
 		 'VEL'	: ['Velocity', 'm/s'],
 		 'DISP'	: ['Displacement', 'm'],
-		 'CHAN'	: ['channel-specific', ' Counts']}
+# AstroTaka -----------------
+		 #'CHAN'	: ['channel-specific', ' Counts']}
+		 'CHAN'	: ['channel-specific', ' Counts'],
+		 'GAL'	: ['gal','gal']}
+# ---------------------------
 
 g = 9.81	# earth gravity in m/s2
 
