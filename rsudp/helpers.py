@@ -407,7 +407,10 @@ def deconv_vel_inst(self, trace, output):
 		trace.remove_response(inventory=rs.inv, pre_filt=[0.1, 0.6, 0.95*self.sps, self.sps],
 								output='VEL', water_level=4.5, taper=False)
 	if 'ACC' in self.deconv:
-		trace.data = rs.np.gradient(trace.data, 1)
+# AstroTaka -----------------
+		#trace.data = rs.np.gradient(trace.data, 1)
+		trace.data = rs.np.gradient(trace.data, 1)*10.0
+# ---------------------------
 	elif 'GRAV' in self.deconv:
 		trace.data = rs.np.gradient(trace.data, 1) / rs.g
 		trace.stats.units = 'Earth gravity'
@@ -415,6 +418,11 @@ def deconv_vel_inst(self, trace, output):
 		trace.data = rs.np.cumsum(trace.data)
 		trace.taper(max_percentage=0.1, side='left', max_length=1)
 		trace.detrend(type='demean')
+# AstroTaka -----------------
+	elif 'GAL' in self.deconv:
+		trace.data = rs.np.gradient(trace.data, 1) * 1000.0
+		trace.stats.units = 'gal'
+# ---------------------------
 	else:
 		trace.stats.units = 'Velocity'
 
@@ -445,6 +453,11 @@ def deconv_acc_inst(self, trace, output):
 	elif 'GRAV' in self.deconv:
 		trace.data = trace.data / rs.g
 		trace.stats.units = 'Earth gravity'
+# AstroTaka -----------------
+	elif 'GAL' in self.deconv:
+		trace.data = trace.data * 100.0
+		trace.stats.units = 'gal'
+# ---------------------------
 	else:
 		trace.stats.units = 'Acceleration'
 	if ('ACC' not in self.deconv) and ('CHAN' not in self.deconv):
@@ -492,7 +505,10 @@ def deconvolve(self):
 	self.stream = self.raw.copy()
 	for trace in self.stream:
 		trace.stats.units = self.units
-		output = 'ACC' if self.deconv == 'GRAV' else self.deconv	# if conversion is to gravity
+# AstroTaka -----------------
+		#output = 'ACC' if self.deconv == 'GRAV' else self.deconv	# if conversion is to gravity
+		output = 'ACC' if self.deconv == 'GRAV' or self.deconv == 'GAL' else self.deconv	# if conversion is to gravity
+# ---------------------------
 		if self.deconv:
 			if trace.stats.channel in vel_channels:
 				deconv_vel_inst(self, trace, output)	# geophone channels
