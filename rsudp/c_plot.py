@@ -116,7 +116,7 @@ class Plot:
 				 fullscreen=False, kiosk=False,
 				 deconv=False, screencap=False,
 # AstroTaka -----------------
-				 only_detect=False, only_alart=False,
+				 only_detect=False, only_alert=False,
 # ---------------------------
 				 alert=True, testing=False):
 		"""
@@ -178,7 +178,7 @@ class Plot:
 # AstroTaka -----------------
 		self.detect_count = 0
 		self.only_detect = only_detect
-		self.only_alart = only_alart
+		self.only_alert = only_alert
 # ---------------------------
 
 		printM('Starting.', self.sender)
@@ -700,8 +700,8 @@ class Plot:
 		#self.deconvolve()
 		#self.update_plot()
 		if((self.only_detect and self.detect_count>0) or
-	 	   (self.only_alart and self.save and (self.save_timer > self.save[0][0])) or
-		   (not self.only_detect and not self.only_alart)):
+	 	   (self.only_alert and self.save and (self.save_timer > self.save[0][0])) or
+		   (not self.only_detect and not self.only_alert)):
 			self.deconvolve()
 			self.update_plot()
 # ---------------------------
