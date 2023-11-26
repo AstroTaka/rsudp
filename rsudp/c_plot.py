@@ -116,7 +116,7 @@ class Plot:
 				 fullscreen=False, kiosk=False,
 				 deconv=False, screencap=False,
 # AstroTaka -----------------
-				 only_detect=False, only_alarm=False,
+				 only_detect=False, only_alart=False,
 # ---------------------------
 				 alert=True, testing=False):
 		"""
@@ -176,7 +176,9 @@ class Plot:
 		self.linecolor = '#c28285' # seismogram color
 
 # AstroTaka -----------------
-		self.detecting = False
+		self.detec_count = 0
+		self.only_detect = only_detect
+		self.only_alart = only_alart
 # ---------------------------
 
 		printM('Starting.', self.sender)
@@ -206,7 +208,7 @@ class Plot:
 
 		elif 'ALARM' in str(d):
 # AstroTaka -----------------
-			self.detecting = True
+			self.detect_count += 1
 # ---------------------------
 			self.events += 1		# add event to count
 			self.save_timer -= 1	# don't push the save time forward if there are a large number of alarm events
@@ -697,9 +699,9 @@ class Plot:
 # AstroTaka -----------------
 		#self.deconvolve()
 		#self.update_plot()
-		if((self.only_detect && self.detecting) ||
-	 	   (self.only_alarm && self.save && (self.save_timer > self.save[0][0])) ||
-		   (!self.only_detect && !self.only_alarm)):
+		if((self.only_detect and self.detect_count>0) or
+	 	   (self.only_alarm and self.save and (self.save_timer > self.save[0][0])) or
+		   (not self.only_detect and not self.only_alarm)):
 			self.deconvolve()
 			self.update_plot()
 # ---------------------------
@@ -711,7 +713,7 @@ class Plot:
 			if (self.save_timer > self.save[0][0]):
 				self._eventsave()
 # AstroTaka -----------------
-				self.detecting = False
+				self.detect_count -= 1
 # ---------------------------
 		u = 0
 		time.sleep(0.005)		# wait a ms to see if another packet will arrive
