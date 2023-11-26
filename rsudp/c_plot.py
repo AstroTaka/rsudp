@@ -700,8 +700,8 @@ class Plot:
 		#self.deconvolve()
 		#self.update_plot()
 		if((self.only_detect and self.detect_count>0) or
-	 	   (self.only_alarm and self.save and (self.save_timer > self.save[0][0])) or
-		   (not self.only_detect and not self.only_alarm)):
+	 	   (self.only_alart and self.save and (self.save_timer > self.save[0][0])) or
+		   (not self.only_detect and not self.only_alart)):
 			self.deconvolve()
 			self.update_plot()
 # ---------------------------
