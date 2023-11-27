@@ -46,7 +46,10 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "eq_screenshots": false,
     "channels": ["all"],
     "deconvolve": true,
-    "units": "CHAN"},
+    "units": "CHAN",
+	"only_alert": false,
+	"only_detect": false,
+	"refresh_factor": 1},
 "forward": {
     "enabled": false,
     "address": ["192.168.1.254"],
@@ -95,7 +98,11 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "channel": "HZ",
     "interval": 10,
     "deconvolve": false,
-    "units": "VEL"}
+    "units": "VEL"},
+"LINE": {
+    "enabled": false,
+    "token": "YOUR_LINE_NOTIFY_TOKEN",
+    "send_images": true}
 }
 
 """ % (output_dir)
