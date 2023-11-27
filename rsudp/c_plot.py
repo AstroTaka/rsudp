@@ -117,6 +117,7 @@ class Plot:
 				 deconv=False, screencap=False,
 # AstroTaka -----------------
 				 only_detect=False, only_alert=False,
+				 refresh_factor=1,
 # ---------------------------
 				 alert=True, testing=False):
 		"""
@@ -176,6 +177,7 @@ class Plot:
 		self.linecolor = '#c28285' # seismogram color
 
 # AstroTaka -----------------
+		self.delay *= refresh_factor
 		self.detect_count = 0
 		self.only_detect = only_detect
 		self.only_alert = only_alert

@@ -205,6 +205,13 @@ def run(settings, debug):
 			deconv = False
 # AstroTaka -----------------
 		try:
+			refresh_factor = int(settings['plot']['refresh_factor'])
+			if(refresh_factor<1):
+				refresh_factor = 1
+		except KeyError:
+			refresh_factor = 1
+
+		try:
 			if settings['plot']['only_detect']:
 				only_detect = settings['plot']['only_detect']
 			else:
@@ -226,6 +233,7 @@ def run(settings, debug):
 						fullscreen=full, kiosk=kiosk, deconv=deconv, q=pq,
 # AstroTaka -----------------
 						only_detect = only_detect, only_alert = only_alert,
+						refresh_factor = refresh_factor,
 # ---------------------------
 						screencap=screencap, alert=alert, testing=TESTING)
 		# no mk_p() here because the plotter must be controlled by the main thread (this one)
