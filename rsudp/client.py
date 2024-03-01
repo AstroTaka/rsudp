@@ -205,13 +205,6 @@ def run(settings, debug):
 			deconv = False
 # AstroTaka -----------------
 		try:
-			refresh_factor = int(settings['plot']['refresh_factor'])
-			if(refresh_factor<1):
-				refresh_factor = 1
-		except KeyError:
-			refresh_factor = 1
-
-		try:
 			if settings['plot']['plot_during_alert']:
 				plot_during_alert = settings['plot']['plot_during_alert']
 			else:
@@ -233,7 +226,6 @@ def run(settings, debug):
 						fullscreen=full, kiosk=kiosk, deconv=deconv, q=pq,
 # AstroTaka -----------------
 						plot_during_alert = plot_during_alert, plot_only_alert = plot_only_alert,
-						refresh_factor = refresh_factor,
 # ---------------------------
 						screencap=screencap, alert=alert, testing=TESTING)
 		# no mk_p() here because the plotter must be controlled by the main thread (this one)
