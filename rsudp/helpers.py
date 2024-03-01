@@ -47,8 +47,8 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "channels": ["all"],
     "deconvolve": true,
     "units": "CHAN",
-	"only_alert": false,
-	"only_detect": false,
+	"plot_only_alert": false,
+	"plot_during_alert": false,
 	"refresh_factor": 1},
 "forward": {
     "enabled": false,

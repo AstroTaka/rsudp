@@ -116,8 +116,7 @@ class Plot:
 				 fullscreen=False, kiosk=False,
 				 deconv=False, screencap=False,
 # AstroTaka -----------------
-				 only_detect=False, only_alert=False,
-				 refresh_factor=1,
+				 plot_during_alert=False, plot_only_alert=False,
 # ---------------------------
 				 alert=True, testing=False):
 		"""
@@ -177,10 +176,8 @@ class Plot:
 		self.linecolor = '#c28285' # seismogram color
 
 # AstroTaka -----------------
-		self.delay *= refresh_factor
-		self.detect_count = 0
-		self.only_detect = only_detect
-		self.only_alert = only_alert
+		self.plot_during_alert = plot_during_alert
+		self.plot_only_alert = plot_only_alert
 # ---------------------------
 
 		printM('Starting.', self.sender)
@@ -209,9 +206,6 @@ class Plot:
 			rs.producer = False
 
 		elif 'ALARM' in str(d):
-# AstroTaka -----------------
-			self.detect_count += 1
-# ---------------------------
 			self.events += 1		# add event to count
 			self.save_timer -= 1	# don't push the save time forward if there are a large number of alarm events
 			event = [self.save_timer + int(self.save_pct*self.pkts_in_period),
@@ -698,15 +692,8 @@ class Plot:
 			i += 1
 		self.stream = rs.copy(self.stream)	# essential, otherwise the stream has a memory leak
 		self.raw = rs.copy(self.raw)		# and could eventually crash the machine
-# AstroTaka -----------------
-		#self.deconvolve()
-		#self.update_plot()
-		if((self.only_detect and self.detect_count>0) or
-	 	   (self.only_alert and self.save and (self.save_timer > self.save[0][0])) or
-		   (not self.only_detect and not self.only_alert)):
-			self.deconvolve()
-			self.update_plot()
-# ---------------------------
+		self.deconvolve()
+		self.update_plot()
 		if u >= 0:				# avoiding a matplotlib broadcast error
 			self.figloop()
 
@@ -714,9 +701,6 @@ class Plot:
 			# save the plot
 			if (self.save_timer > self.save[0][0]):
 				self._eventsave()
-# AstroTaka -----------------
-				self.detect_count -= 1
-# ---------------------------
 		u = 0
 		time.sleep(0.005)		# wait a ms to see if another packet will arrive
 		sys.stdout.flush()
@@ -765,6 +749,21 @@ class Plot:
 					time.sleep(0.009)		# wait a ms to see if another packet will arrive
 				else:
 					u = self.qu(u)
+# AstroTaka -----------------
+					if self.plot_only_alert:
+						self.delay = 4*3600
+						if len(self.save)>0:
+							if (self.save_timer > self.save[0][0]) and self.save:
+								n = 0
+								break
+
+					if self.plot_during_alert:
+						if len(self.save)>0:
+							self.delay = rs.tr if (self.spectrogram) else 1
+							self.delay = 0.5 if (self.chans == ['SHZ']) else self.delay
+						else:
+							self.delay = 4*3600
+# ---------------------------
 					if n > (self.delay * rs.numchns):
 						n = 0
 						break

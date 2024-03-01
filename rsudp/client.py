@@ -212,27 +212,27 @@ def run(settings, debug):
 			refresh_factor = 1
 
 		try:
-			if settings['plot']['only_detect']:
-				only_detect = settings['plot']['only_detect']
+			if settings['plot']['plot_during_alert']:
+				plot_during_alert = settings['plot']['plot_during_alert']
 			else:
-				only_detect = False
+				plot_during_alert = False
 		except KeyError:
-			only_detect = False
+			plot_during_alert = False
 
 		try:
-			if settings['plot']['only_alert']:
-				only_alert = settings['plot']['only_alert']
+			if settings['plot']['plot_only_alert']:
+				plot_only_alert = settings['plot']['plot_only_alert']
 			else:
-				only_alert = False
+				plot_only_alert = False
 		except KeyError:
-			only_alert = False
+			plot_only_alert = False
 # ---------------------------
 
 		pq = mk_q()
 		PLOTTER = Plot(cha=cha, seconds=sec, spectrogram=spec,
 						fullscreen=full, kiosk=kiosk, deconv=deconv, q=pq,
 # AstroTaka -----------------
-						only_detect = only_detect, only_alert = only_alert,
+						plot_during_alert = plot_during_alert, plot_only_alert = plot_only_alert,
 						refresh_factor = refresh_factor,
 # ---------------------------
 						screencap=screencap, alert=alert, testing=TESTING)
