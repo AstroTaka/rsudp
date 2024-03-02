@@ -176,6 +176,8 @@ class Plot:
 		self.linecolor = '#c28285' # seismogram color
 
 # AstroTaka -----------------
+		self.save10 = []
+		self.save_timer10 = 0
 		self.plot_during_alert = plot_during_alert
 		self.plot_only_alert = plot_only_alert
 # ---------------------------
@@ -212,7 +214,16 @@ class Plot:
 					 helpers.fsec(helpers.get_msg_time(d))]	# event = [save after count, datetime]
 			self.last_event_str = '%s UTC' % (event[1].strftime('%Y-%m-%d %H:%M:%S.%f')[:22])
 			printM('Event time: %s' % (self.last_event_str), sender=self.sender)		# show event time in the logs
+# AstroTaka -----------------
+			self.save_timer10 -= 1	# don't push the save time forward if there are a large number of alarm events
+			event10 = [self.save_timer10 + int(rs.tr * rs.numchns * 10),
+					 helpers.fsec(helpers.get_msg_time(d))]	# event = [save after count, datetime]
+# ---------------------------
 			if self.screencap:
+# AstroTaka -----------------
+				printM('Saving png in about 10 seconds', self.sender)
+				self.save10.append(event10) # append 
+# ---------------------------
 				printM('Saving png in about %i seconds' % (self.save_pct * (self.seconds)), self.sender)
 				self.save.append(event) # append 
 			self.fig.suptitle('%s.%s live output - detected events: %s' # title
@@ -312,6 +323,34 @@ class Plot:
 
 		# reset title
 		self._set_fig_title()
+
+# AstroTaka -----------------
+	def _eventsave10(self):
+		'''
+		This function takes the next event in line and pops it out of the list,
+		so that it can be saved and others preserved.
+		Then, it sets the title to something having to do with the event,
+		then calls the save figure function, and finally resets the title.
+		'''
+		self.save10.reverse()
+		event = self.save10.pop()
+		self.save10.reverse()
+
+		event_time_str = (event[1]+(3600*9)).strftime('%Y-%m-%d-%H%M%S')+"_10"				# event time for filename
+		title_time_str = (event[1]+(3600*9)).strftime('%Y/%m/%d %H:%M:%S.%f')[:22]		# pretty event time for plot
+
+		# change title (just for a moment)
+		#self.fig.suptitle('%s.%s detected event - %s JST' # title
+		self.fig.suptitle('%s.%s 地震検知 - %s JST' # title
+						  % (self.net, self.stn, title_time_str),
+						  fontsize=15, color=self.fgcolor, x=0.52, fontname='MotoyaLMaru')
+
+		# save figure
+		self.savefig(event_time=event[1], event_time_str=event_time_str)
+
+		# reset title
+		self._set_fig_title()
+# ---------------------------
 
 
 	def savefig(self, event_time=rs.UTCDateTime.now(),
@@ -701,6 +740,13 @@ class Plot:
 			# save the plot
 			if (self.save_timer > self.save[0][0]):
 				self._eventsave()
+
+# AstroTaka -----------------
+		if self.save10:
+			# save the plot
+			if (self.save_timer10 > self.save10[0][0]):
+				self._eventsave10()
+# ---------------------------
 		u = 0
 		time.sleep(0.005)		# wait a ms to see if another packet will arrive
 		sys.stdout.flush()
@@ -744,6 +790,9 @@ class Plot:
 					break
 				n += 1
 				self.save_timer += 1
+# AstroTaka -----------------
+				self.save_timer10 += 1
+# ---------------------------
 				if self.queue.qsize() > 0:
 					self.getq()
 					time.sleep(0.009)		# wait a ms to see if another packet will arrive
@@ -753,12 +802,16 @@ class Plot:
 					if self.plot_only_alert:
 						self.delay = 4*3600
 						if len(self.save)>0:
-							if (self.save_timer > self.save[0][0]) and self.save:
+							if (self.save_timer > self.save[0][0]):
+								n = 0
+								break
+						if len(self.save10)>0:
+							if (self.save_timer10 > self.save10[0][0]):
 								n = 0
 								break
 
 					if self.plot_during_alert:
-						if len(self.save)>0:
+						if len(self.save)>0 or len(self.save10)>0:
 							self.delay = rs.tr if (self.spectrogram) else 1
 							self.delay = 0.5 if (self.chans == ['SHZ']) else self.delay
 						else:
