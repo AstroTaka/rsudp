@@ -692,6 +692,12 @@ class Plot:
 # ---------------------------
 		self.raw = self.raw.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 		self.stream = self.stream.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
+# AstroTaka -----------------
+		shindo_stream = np.array([self.stream[0].data,self.stream[2].data,self.stream[2].data])
+		shindo = getShindo(shindo_stream, 0.01)
+		shindo_name = getShindoName(shindo, 'jp')
+		print("Shindo:" + str(shindo) + ' ('+shindo_name+')')
+# ---------------------------
 		i = 0
 		for i in range(self.num_chans):	# for each channel, update the plots
 			mean = int(round(np.mean(self.stream[i].data)))
@@ -827,3 +833,129 @@ class Plot:
 			if self.testing:
 				TEST['c_plot'][1] = True
 		return
+
+# AstroTaka -----------------
+	# from https://github.com/RR-Inyo/shindo/
+	
+	def _filter(A: np.ndarray, Ts: float) -> None:
+		"""
+		@brief Apply filter to the accleration spectra
+		@param A 3-D acceleration frequency-domain spectra, N-S, E-W, and U-D
+		@param Ts Sampling period
+		"""
+		N = len(A)
+		k = np.arange(N)
+		f = k / (N * Ts * 2)
+
+		# Periodic-effect filter
+		epsilon = 0.0001  # To prevent division by zero
+		W_pe = np.sqrt(1 / (f + epsilon))
+
+		# High-cut filter
+		x = f / 10
+		W_hc = 1 / np.sqrt( \
+				1 + 0.694 * x**2 + 0.241 * x**4 + 0.0557 * x**6 \
+				+ 0.009664 * x**8 + 0.00134 * x**10 + 0.000155 * x**12 \
+		)
+
+		# Low-cut filter
+		W_lc = np.sqrt(1 - np.exp(-(f / 0.5)**3))
+
+		# Apply filter
+		A[:,0] *= (W_pe * W_hc * W_lc)
+		A[:,1] *= (W_pe * W_hc * W_lc)
+		A[:,2] *= (W_pe * W_hc * W_lc)
+
+	def _search_aval(a: np.ndarray, Ts: float) -> float:
+		"""
+		@brief Search for the a value
+		@param a 3-D acceleration time-domain data in [gal], N-S, E-W, and U-D
+		@param Ts Sampling period
+		@return The a value found
+		"""
+		aval = 2000.0            # Initial value of search [gal]
+		T_ref = 0.3              # Time where acceleration is above the a value
+		epsilon = T_ref * 0.001  # Acceptable error
+		while True:
+			T_above_aval = np.count_nonzero(a >= aval) * Ts
+
+			# Too high
+			if T_above_aval < T_ref - epsilon:
+				aval -= aval / 2
+				continue
+
+			# Too low
+			if T_above_aval > T_ref + epsilon:
+				aval += aval / 2
+				continue
+
+			# The a value found
+			break
+		return aval
+
+	def getShindo(a: np.ndarray, Ts: float) -> float:
+		"""
+		@brief Calculates JMA shindo scale from acceleration data as ndarray 
+		@param a 3-D acceleration time-domain data in [gal], N-S, E-W, and U-D
+		@param Ts Sampling period
+		@return Calculated instrumental shindo scale
+		"""
+
+		# Perform FFT
+		A = np.fft.rfft(a, axis = 0)
+
+		# Apply filter defined by JMA
+		_filter(A, Ts)
+
+		# Perform inverse FFT
+		afil = np.fft.irfft(A, axis = 0)
+		afil_total = np.sqrt(np.sum(afil**2, axis = 1))
+
+		# Search for the a value
+		aval = _search_aval(afil_total, Ts)
+
+		# Calculate JMA instrumental seismic intensity
+		I_raw = 2 * np.log10(aval) + 0.94
+		I = np.floor(np.round(I_raw, decimals = 2) * 10) / 10
+
+		return I
+
+	def getShindoName(I: float, lang: str = 'jp') -> str:
+		"""
+		@brief Convert instrumental shindo scale to a string
+		@param I JMA instrumental shindo scale
+		@param lang Language ('jp' or 'en')
+		"""
+		if I < 0.5:
+			return '0'
+		elif 0.5 <= I < 1.5:
+			return '1'
+		elif 1.5 <= I < 2.5:
+			return '2'
+		elif 2.5 <= I < 3.5:
+			return '3'
+		elif 3.5 <= I < 4.5:
+			return '4'
+		elif 4.5 <= I < 5.0:
+			if lang == 'jp':
+				return '5弱'
+			else:
+				return '5-'
+		elif 5.0 <= I < 5.5:
+			if lang == 'jp':
+				return '5強'
+			else:
+				return '5+'
+		elif 5.5 <= I < 6.0:
+			if lang == 'jp':
+				return '6弱'
+			else:
+				return '6-'
+		elif 6.0 <= I < 6.5:
+			if lang == 'jp':
+				return '6強'
+			else:
+				return '6+'
+		elif I >= 6.5:
+			return '7'
+# ---------------------------
