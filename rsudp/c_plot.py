@@ -693,9 +693,9 @@ class Plot:
 		self.raw = self.raw.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 		self.stream = self.stream.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 # AstroTaka -----------------
-		shindo_stream = np.array([self.stream[0].data,self.stream[2].data,self.stream[2].data])
-		shindo = getShindo(shindo_stream, 0.01)
-		shindo_name = getShindoName(shindo, 'jp')
+		shindo_stream = np.dstack([self.stream[0].data,self.stream[2].data,self.stream[2].data])
+		shindo = self.getShindo(shindo_stream[0], 0.01)
+		shindo_name = self.getShindoName(shindo, 'jp')
 		print("Shindo:" + str(shindo) + ' ('+shindo_name+')')
 # ---------------------------
 		i = 0
@@ -837,7 +837,7 @@ class Plot:
 # AstroTaka -----------------
 	# from https://github.com/RR-Inyo/shindo/
 	
-	def _filter(A: np.ndarray, Ts: float) -> None:
+	def _filter(self, A: np.ndarray, Ts: float) -> None:
 		"""
 		@brief Apply filter to the accleration spectra
 		@param A 3-D acceleration frequency-domain spectra, N-S, E-W, and U-D
@@ -866,7 +866,7 @@ class Plot:
 		A[:,1] *= (W_pe * W_hc * W_lc)
 		A[:,2] *= (W_pe * W_hc * W_lc)
 
-	def _search_aval(a: np.ndarray, Ts: float) -> float:
+	def _search_aval(self, a: np.ndarray, Ts: float) -> float:
 		"""
 		@brief Search for the a value
 		@param a 3-D acceleration time-domain data in [gal], N-S, E-W, and U-D
@@ -893,7 +893,7 @@ class Plot:
 			break
 		return aval
 
-	def getShindo(a: np.ndarray, Ts: float) -> float:
+	def getShindo(self, a: np.ndarray, Ts: float) -> float:
 		"""
 		@brief Calculates JMA shindo scale from acceleration data as ndarray 
 		@param a 3-D acceleration time-domain data in [gal], N-S, E-W, and U-D
@@ -905,14 +905,14 @@ class Plot:
 		A = np.fft.rfft(a, axis = 0)
 
 		# Apply filter defined by JMA
-		_filter(A, Ts)
+		self._filter(A, Ts)
 
 		# Perform inverse FFT
 		afil = np.fft.irfft(A, axis = 0)
 		afil_total = np.sqrt(np.sum(afil**2, axis = 1))
 
 		# Search for the a value
-		aval = _search_aval(afil_total, Ts)
+		aval = self._search_aval(afil_total, Ts)
 
 		# Calculate JMA instrumental seismic intensity
 		I_raw = 2 * np.log10(aval) + 0.94
@@ -920,7 +920,7 @@ class Plot:
 
 		return I
 
-	def getShindoName(I: float, lang: str = 'jp') -> str:
+	def getShindoName(self, I: float, lang: str = 'jp') -> str:
 		"""
 		@brief Convert instrumental shindo scale to a string
 		@param I JMA instrumental shindo scale
