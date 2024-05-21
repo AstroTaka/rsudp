@@ -37,6 +37,7 @@ try:		# test for matplotlib and exit if import fails
 # AstroTaka -----------------
 	from matplotlib.ticker import ScalarFormatter
 	from matplotlib.ticker import LogFormatter
+	import traceback
 # ---------------------------
 	rcParams['toolbar'] = 'None'
 	plt.ion()
@@ -374,7 +375,7 @@ class Plot:
 		# imgpath requires a UTCDateTime and a string figure path
 # AstroTaka -----------------
 		#self.master_queue.put(helpers.msg_imgpath(event_time, figname))
-		shindo_str = '|震度/計測震度: '+shindo_name+'/'+str(self.shindo)
+		shindo_str = '|震度'+self.shindo_name+'('+str(self.shindo)+')'
 		self.master_queue.put(helpers.msg_imgpath(event_time, figname+shindo_str))
 # ---------------------------
 
@@ -701,10 +702,11 @@ class Plot:
 # AstroTaka -----------------
 		try:
 			stream_len = min(self.stream[0].data.shape,self.stream[1].data.shape,self.stream[2].data.shape)[0]-1
-			shindo_stream = np.dstack([self.stream[0].data[:stream_len-1],self.stream[2].data[:stream_len-1],self.stream[2].data[:stream_len-1]])
+			shindo_stream = np.dstack([self.stream[0].data[:stream_len],self.stream[1].data[:stream_len],self.stream[2].data[:stream_len]])
 			self.shindo = self.getShindo(shindo_stream[0], 0.01)
-			self.shindo_name = self.getShindoName(shindo, 'jp')
+			self.shindo_name = self.getShindoName(self.shindo, 'jp')
 		except:
+			traceback.print_exc()
 			self.shindo = -1
 			self.shindo_name = 'ERROR'
 # ---------------------------
