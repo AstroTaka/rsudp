@@ -939,35 +939,53 @@ class Plot:
 		@param lang Language ('jp' or 'en')
 		"""
 		if I < 0.5:
-			return '0'
+			if lang == 'jp':
+				return '０'
+			else:
+				return '0'
 		elif 0.5 <= I < 1.5:
-			return '1'
+			if lang == 'jp':
+				return '１'
+			else:
+				return '1'
 		elif 1.5 <= I < 2.5:
-			return '2'
+			if lang == 'jp':
+				return '２'
+			else:
+				return '2'
 		elif 2.5 <= I < 3.5:
-			return '3'
+			if lang == 'jp':
+				return '３'
+			else:
+				return '3'
 		elif 3.5 <= I < 4.5:
-			return '4'
+			if lang == 'jp':
+				return '４'
+			else:
+				return '4'
 		elif 4.5 <= I < 5.0:
 			if lang == 'jp':
-				return '5弱'
+				return '５弱'
 			else:
 				return '5-'
 		elif 5.0 <= I < 5.5:
 			if lang == 'jp':
-				return '5強'
+				return '５強'
 			else:
 				return '5+'
 		elif 5.5 <= I < 6.0:
 			if lang == 'jp':
-				return '6弱'
+				return '６弱'
 			else:
 				return '6-'
 		elif 6.0 <= I < 6.5:
 			if lang == 'jp':
-				return '6強'
+				return '６強'
 			else:
 				return '6+'
 		elif I >= 6.5:
-			return '7'
+			if lang == 'jp':
+				return '７'
+			else:
+				return '7'
 # ---------------------------
