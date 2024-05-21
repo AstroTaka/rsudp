@@ -36,10 +36,10 @@ class LINE(rs.ConsumerThread):
 
 		printM('Starting.', self.sender)
 
-	def line_send_image(self, filename):
+	def line_send_image(self, filename, msg):
 		url = "https://notify-api.line.me/api/notify"
 		headers = {"Authorization" : "Bearer "+ self.token}
-		payload = {"message" :  ' '}
+		payload = {"message" :  msg }
 		res = ''
 		with open(filename, 'rb') as f:
 			res = requests.post(url ,headers = headers ,params=payload, files={'imageFile': f}).text
@@ -100,13 +100,13 @@ class LINE(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
-			imgpath = helpers.get_msg_path(d)
+			imgpath = helpers.get_msg_path(d.split('|')[0])
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			response = None
 			if os.path.exists(imgpath):
 				try:
 					printM('Uploading image to LINE %s' % (imgpath), self.sender)
-					self.line_send_image(imgpath)
+					self.line_send_image(imgpath,d.split('|')[1])
 					printM('Sent image', sender=self.sender)
 				except Exception as e:
 					printE('Could not send image - %s' % (e))
@@ -114,7 +114,7 @@ class LINE(rs.ConsumerThread):
 						printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 						time.sleep(5.1)
 						printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
-						self.line_send_image(imgpath)
+						self.line_send_image(imgpath,d.split('|')[1])
 						printM('Sent image', sender=self.sender)
 
 					except Exception as e:

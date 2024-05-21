@@ -180,6 +180,8 @@ class Plot:
 		self.save_timer10 = 0
 		self.plot_during_alert = plot_during_alert
 		self.plot_only_alert = plot_only_alert
+		self.shindo = 0.0
+		self.shindo_name = ''
 # ---------------------------
 
 		printM('Starting.', self.sender)
@@ -216,7 +218,7 @@ class Plot:
 			printM('Event time: %s' % (self.last_event_str), sender=self.sender)		# show event time in the logs
 # AstroTaka -----------------
 			self.save_timer10 -= 1	# don't push the save time forward if there are a large number of alarm events
-			event10 = [self.save_timer10 + int(rs.tr * rs.numchns * 10),
+			event10 = [self.save_timer10 + int(rs.tr * rs.numchns * 20),
 					 helpers.fsec(helpers.get_msg_time(d))]	# event = [save after count, datetime]
 # ---------------------------
 			if self.screencap:
@@ -370,7 +372,11 @@ class Plot:
 		printM('Saved %s' % (figname), sender=self.sender)
 		printM('%s thread has saved an image, sending IMGPATH message to queues' % self.sender, sender=self.sender)
 		# imgpath requires a UTCDateTime and a string figure path
-		self.master_queue.put(helpers.msg_imgpath(event_time, figname))
+# AstroTaka -----------------
+		#self.master_queue.put(helpers.msg_imgpath(event_time, figname))
+		shindo_str = '|震度/計測震度: '+shindo_name+'/'+str(self.shindo)
+		self.master_queue.put(helpers.msg_imgpath(event_time, figname+shindo_str))
+# ---------------------------
 
 
 	def _set_fig_title(self):
@@ -693,10 +699,14 @@ class Plot:
 		self.raw = self.raw.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 		self.stream = self.stream.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 # AstroTaka -----------------
-		shindo_stream = np.dstack([self.stream[0].data,self.stream[2].data,self.stream[2].data])
-		shindo = self.getShindo(shindo_stream[0], 0.01)
-		shindo_name = self.getShindoName(shindo, 'jp')
-		print("Shindo:" + str(shindo) + ' ('+shindo_name+')')
+		try:
+			stream_len = min(self.stream[0].data.shape,self.stream[1].data.shape,self.stream[2].data.shape)[0]-1
+			shindo_stream = np.dstack([self.stream[0].data[:stream_len-1],self.stream[2].data[:stream_len-1],self.stream[2].data[:stream_len-1]])
+			self.shindo = self.getShindo(shindo_stream[0], 0.01)
+			self.shindo_name = self.getShindoName(shindo, 'jp')
+		except:
+			self.shindo = -1
+			self.shindo_name = 'ERROR'
 # ---------------------------
 		i = 0
 		for i in range(self.num_chans):	# for each channel, update the plots
