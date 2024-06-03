@@ -714,7 +714,7 @@ class Plot:
 						for line in f:
 							value = line.split('/')
 							if len(value)==4:
-								self.shindo = value[0]
+								self.shindo = float(value[0])
 								self.shindo_ext = line
 								self.shindo_name = self.getShindoName(self.shindo, 'jp')
 								find = True
