@@ -712,7 +712,7 @@ class Plot:
 				if os.path.isfile('/tmp/shindo.txt'):
 					with open('/tmp/shindo.txt') as f:
 						for line in f:
-       						value = line.split('/')
+							value = line.split('/')
 							if len(value)==4:
 								self.shindo = value[0]
 								self.shindo_ext = line
