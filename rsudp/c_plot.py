@@ -375,7 +375,7 @@ class Plot:
 		# imgpath requires a UTCDateTime and a string figure path
 # AstroTaka -----------------
 		#self.master_queue.put(helpers.msg_imgpath(event_time, figname))
-		shindo_str = '|震度'+self.shindo_name+'('+str(self.shindo)+')'
+		shindo_str = '|震度'+self.shindo_name+'('+self.shindo_ext+')'
 		self.master_queue.put(helpers.msg_imgpath(event_time, figname+shindo_str))
 # ---------------------------
 
@@ -701,13 +701,33 @@ class Plot:
 		self.stream = self.stream.slice(starttime=obstart)	# slice the stream to the specified length (seconds variable)
 # AstroTaka -----------------
 		try:
-			stream_len = min(self.stream[0].data.shape,self.stream[1].data.shape,self.stream[2].data.shape)[0]-1
-			shindo_stream = np.dstack([self.stream[0].data[:stream_len],self.stream[1].data[:stream_len],self.stream[2].data[:stream_len]])
-			self.shindo = self.getShindo(shindo_stream[0], 0.01)
-			self.shindo_name = self.getShindoName(self.shindo, 'jp')
+			if self.num_chans==3:
+				stream_len = min(self.stream[0].data.shape,self.stream[1].data.shape,self.stream[2].data.shape)[0]-1
+				shindo_stream = np.dstack([self.stream[0].data[:stream_len],self.stream[1].data[:stream_len],self.stream[2].data[:stream_len]])
+				self.shindo = self.getShindo(shindo_stream[0], 0.01)
+				self.shindo_ext = str(self.shindo)
+				self.shindo_name = self.getShindoName(self.shindo, 'jp')
+			else:
+				find = False
+				if os.path.isfile('/tmp/shindo.txt'):
+					with open('/tmp/shindo.txt') as f:
+						for line in f:
+       						value = line.split('/')
+							if len(value)==4:
+								self.shindo = value[0]
+								self.shindo_ext = line
+								self.shindo_name = self.getShindoName(self.shindo, 'jp')
+								find = True
+								break
+
+				if find == False:
+					self.shindo = -1
+					self.shindo_ext='-1'
+					self.shindo_name = '不明'
 		except:
 			traceback.print_exc()
 			self.shindo = -1
+			self.shindo_ext = '-1'
 			self.shindo_name = 'ERROR'
 # ---------------------------
 		i = 0
