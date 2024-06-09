@@ -104,7 +104,7 @@ def handler(signum, frame, ip=ip):
 	raise IOError('No data received')
 
 
-def initRSlib(dport=port, rsstn='Z0000', timeout=10):
+def initRSlib(dport=port, rsstn='Z0000', timeout=10, stn_file=''):
 	'''
 	.. role:: pycode(code)
 		:language: python
@@ -135,6 +135,8 @@ def initRSlib(dport=port, rsstn='Z0000', timeout=10):
 	'''
 	global port, stn, to, initd, port
 	global producer
+	global station_file
+	station_file = stn_file
 	sender = 'RS lib'
 	printM('Initializing rsudp v %s.' % (__version__), sender)
 	try:						# set port value first
@@ -510,9 +512,21 @@ def get_inventory(sender='get_inventory'):
 	global inv, stn, region
 	sender = 'get_inventory'
 	if 'Z0000' in stn:
-		printW('No station name given, continuing without inventory.',
-				sender)
-		inv = False
+		try:
+			printM('Try to fetch inventory from %s'
+					% (station_file), sender)
+
+			inv = read_inventory(station_file)
+			region = FlinnEngdahl().get_region(inv[0][-1].longitude, inv[0][-1].latitude)
+			printM('Inventory fetch successful. Station region is %s' % (region), sender)
+			stn = inv[0][-1]._code.upper()
+			printM('Station is %s' % (stn), sender)
+		except Exception as e:
+			printE('Inventory fetch failed!', sender)
+			printE('Error detail: %s' % e, sender, spaces=True)
+			inv = False
+			region = False
+			printW('Continuing without inventory.', sender)
 	else:
 		try:
 			printM('Fetching inventory for station %s.%s from Raspberry Shake FDSN.'

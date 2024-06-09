@@ -152,7 +152,8 @@ def run(settings, debug):
 
 	# initialize the central library
 	rs.initRSlib(dport=settings['settings']['port'],
-				 rsstn=settings['settings']['station'])
+				 rsstn=settings['settings']['station'],
+				 stn_file=settings['settings']['output_dir']+"/station.xml")
 
 	H.conn_stats(TESTING)
 	if TESTING:
