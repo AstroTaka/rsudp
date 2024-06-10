@@ -446,7 +446,10 @@ class Plot:
 			self.ax[s].set_facecolor(self.bgcolor)
 			self.ax[s].tick_params(colors=self.fgcolor, labelcolor=self.fgcolor)
 			self.ax[s].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-			self.ax[s].yaxis.set_major_formatter(EngFormatter(unit='%s' % self.unit.lower()))
+# AstroTaka -----------------
+			#self.ax[s].yaxis.set_major_formatter(EngFormatter(unit='%s' % self.unit.lower()))
+			self.ax[s].yaxis.set_major_formatter(ScalarFormatter())
+# ---------------------------
 			if self.spectrogram:
 				# add a spectrogram and set colors
 				self.ax.append(self.fig.add_subplot(self.num_chans*self.mult,
