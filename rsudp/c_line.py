@@ -25,6 +25,7 @@ class LINE(rs.ConsumerThread):
 		self.region = ' - region: %s' % rs.region.title() if rs.region else ''
 		self.message0 = '(Raspberry Shake station %s.%s%s) Event detected at' % (rs.net, rs.stn, self.region)
 		self.livelink = 'live feed https://raspberryshake.net/stationview/#?net=%s&sta=%s' % (rs.net, rs.stn)
+		self.message1 = '地震発生 %s.%s' % (rs.net, rs.stn)
 
 		if q:
 			self.queue = q
@@ -75,7 +76,7 @@ class LINE(rs.ConsumerThread):
 		'''
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
-		message = '%s %s JST - %s\nhttp://www.kmoni.bosai.go.jp/' % (self.message0, self.last_event_str, self.livelink)
+		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
 		response = None
 		try:
 			printM('Sending alert...', sender=self.sender)
