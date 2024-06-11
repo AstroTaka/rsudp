@@ -316,8 +316,8 @@ class Plot:
 
 		# change title (just for a moment)
 		#self.fig.suptitle('%s.%s detected event - %s JST' # title
-		self.fig.suptitle('%s.%s 地震検知 - %s JST' # title
-						  % (self.net, self.stn, title_time_str),
+		self.fig.suptitle('%s.%s 地震検知 - %s JST / 震度%s(%s)' # title
+						  % (self.net, self.stn, title_time_str, self.shindo_name, self.shindo_ext),
 						  fontsize=15, color=self.fgcolor, x=0.52, fontname='MotoyaLMaru')
 # ---------------------------
 
@@ -344,8 +344,8 @@ class Plot:
 
 		# change title (just for a moment)
 		#self.fig.suptitle('%s.%s detected event - %s JST' # title
-		self.fig.suptitle('%s.%s 地震検知 - %s JST' # title
-						  % (self.net, self.stn, title_time_str),
+		self.fig.suptitle('%s.%s 地震検知 - %s JST / 震度%s(%s)' # title
+						  % (self.net, self.stn, title_time_str, self.shindo_name, self.shindo_ext),
 						  fontsize=15, color=self.fgcolor, x=0.52, fontname='MotoyaLMaru')
 
 		# save figure
