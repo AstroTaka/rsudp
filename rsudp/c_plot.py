@@ -675,8 +675,9 @@ class Plot:
 		# some things that unfortunately can't be in the setup function:
 		self.ax[i*self.mult+1].tick_params(axis='x', which='both',
 				bottom=False, top=False, labelbottom=False)
-		self.ax[i*self.mult+1].set_ylabel('Frequency (Hz)', color=self.fgcolor)
 # AstroTaka -----------------
+		#self.ax[i*self.mult+1].set_ylabel('Frequency (Hz)', color=self.fgcolor)
+		self.ax[i*self.mult+1].set_ylabel('周波数 (Hz)', color=self.fgcolor)
 		#self.ax[i*self.mult+1].set_xlabel('Time (UTC)', color=self.fgcolor)
 		self.ax[i*self.mult+1].set_xlabel('Time (JST)', color=self.fgcolor)
 # ---------------------------
