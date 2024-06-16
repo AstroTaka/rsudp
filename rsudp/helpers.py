@@ -428,7 +428,7 @@ def deconv_vel_inst(self, trace, output):
 # AstroTaka -----------------
 	elif 'GAL' in self.deconv:
 		trace.data = rs.np.gradient(trace.data, 1) * 1000.0
-		trace.stats.units = 'Gal'
+		trace.stats.units = 'ガル'
 # ---------------------------
 	else:
 		trace.stats.units = 'Velocity'
@@ -463,7 +463,7 @@ def deconv_acc_inst(self, trace, output):
 # AstroTaka -----------------
 	elif 'GAL' in self.deconv:
 		trace.data = trace.data * 100.0
-		trace.stats.units = 'Gal'
+		trace.stats.units = 'ガル'
 # ---------------------------
 	else:
 		trace.stats.units = 'Acceleration'

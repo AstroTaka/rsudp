@@ -541,8 +541,9 @@ class Plot:
 										  +np.ptp(self.stream[i].data-mean)*0.1)
 			# we can set line plot labels here, but not imshow labels
 			ylabel = self.stream[i].stats.units.strip().capitalize() if (' ' in self.stream[i].stats.units) else self.stream[i].stats.units
-			self.ax[i*self.mult].set_ylabel(ylabel, color=self.fgcolor)
 # AstroTaka -----------------
+			#self.ax[i*self.mult].set_ylabel(ylabel, color=self.fgcolor)
+			self.ax[i*self.mult].set_ylabel(ylabel, color=self.fgcolor, fontname='MotoyaLMaru')
 			#self.ax[i*self.mult].legend(loc='upper left')	# legend and location
 			self.ax[i*self.mult].legend(loc='upper left', prop={"family":"MotoyaLMaru", 'size': 11})	# legend and location
 # ---------------------------
@@ -677,7 +678,7 @@ class Plot:
 				bottom=False, top=False, labelbottom=False)
 # AstroTaka -----------------
 		#self.ax[i*self.mult+1].set_ylabel('Frequency (Hz)', color=self.fgcolor)
-		self.ax[i*self.mult+1].set_ylabel('周波数 (Hz)', color=self.fgcolor)
+		self.ax[i*self.mult+1].set_ylabel('周波数 (Hz)', color=self.fgcolor, fontname='MotoyaLMaru')
 		#self.ax[i*self.mult+1].set_xlabel('Time (UTC)', color=self.fgcolor)
 		self.ax[i*self.mult+1].set_xlabel('Time (JST)', color=self.fgcolor)
 # ---------------------------
