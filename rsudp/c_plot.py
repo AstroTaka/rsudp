@@ -680,7 +680,7 @@ class Plot:
 		#self.ax[i*self.mult+1].set_ylabel('Frequency (Hz)', color=self.fgcolor)
 		self.ax[i*self.mult+1].set_ylabel('周波数 (Hz)', color=self.fgcolor, fontname='MotoyaLMaru')
 		#self.ax[i*self.mult+1].set_xlabel('Time (UTC)', color=self.fgcolor)
-		self.ax[i*self.mult+1].set_xlabel('Time (JST)', color=self.fgcolor)
+		self.ax[i*self.mult+1].set_xlabel('時刻（日本標準時）', color=self.fgcolor, fontname='MotoyaLMaru')
 # ---------------------------
 
 
@@ -774,7 +774,7 @@ class Plot:
 				# also can't be in the setup function
 # AstroTaka -----------------
 				#self.ax[i*self.mult].set_xlabel('Time (UTC)', color=self.fgcolor)
-				self.ax[i*self.mult].set_xlabel('Time (JST)', color=self.fgcolor)
+				self.ax[i*self.mult].set_xlabel('時刻（日本標準時）', color=self.fgcolor, fontname='MotoyaLMaru')
 # ---------------------------
 
 
