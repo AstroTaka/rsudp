@@ -102,6 +102,7 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
 "LINE": {
     "enabled": false,
     "token": "YOUR_LINE_NOTIFY_TOKEN",
+    "token2": "YOUR_LINE_NOTIFY_TOKEN2",
     "send_images": true}
 }
 

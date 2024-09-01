@@ -11,7 +11,7 @@ import traceback
 #import telegram as tg
 
 class LINE(rs.ConsumerThread):
-	def __init__(self, token, q=False, send_images=False):
+	def __init__(self, token, token2, q=False, send_images=False):
 		"""
 		Initializing the LINE message posting thread.
 
@@ -21,6 +21,7 @@ class LINE(rs.ConsumerThread):
 		self.alive = True
 		self.send_images = send_images
 		self.token = token
+		self.token2 = token2
 		self.fmt = '%Y-%m-%d %H:%M:%S.%f'
 		self.region = ' - region: %s' % rs.region.title() if rs.region else ''
 		self.message0 = '(Raspberry Shake station %s.%s%s) Event detected at' % (rs.net, rs.stn, self.region)
@@ -37,9 +38,9 @@ class LINE(rs.ConsumerThread):
 
 		printM('Starting.', self.sender)
 
-	def line_send_image(self, filename, msg):
+	def line_send_image(self, filename, msg, token):
 		url = "https://notify-api.line.me/api/notify"
-		headers = {"Authorization" : "Bearer "+ self.token}
+		headers = {"Authorization" : "Bearer "+ token}
 		payload = {"message" :  msg }
 		res = ''
 		with open(filename, 'rb') as f:
@@ -78,21 +79,22 @@ class LINE(rs.ConsumerThread):
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
 		response = None
-		try:
-			printM('Sending alert...', sender=self.sender)
-			self.line_send_message(message)
-			printM('Sent LINE: %s' % (message), sender=self.sender)
-
-		except Exception as e:
-			printE('Could not send alert - %s' % (e))
+		if self.token != '':
 			try:
-				printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
-				time.sleep(5)
+				printM('Sending alert...', sender=self.sender)
 				self.line_send_message(message)
 				printM('Sent LINE: %s' % (message), sender=self.sender)
+
 			except Exception as e:
 				printE('Could not send alert - %s' % (e))
-				response = None
+				try:
+					printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
+					time.sleep(5)
+					self.line_send_message(message)
+					printM('Sent LINE: %s' % (message), sender=self.sender)
+				except Exception as e:
+					printE('Could not send alert - %s' % (e))
+					response = None
 
 	def _when_img(self, d):
 		'''
@@ -105,22 +107,46 @@ class LINE(rs.ConsumerThread):
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			response = None
 			if os.path.exists(imgpath):
-				try:
-					printM('Uploading image to LINE %s' % (imgpath), self.sender)
-					self.line_send_image(imgpath,d.decode('utf-8').split('|')[1])
-					printM('Sent image', sender=self.sender)
-				except Exception as e:
-					printE('Could not send image - %s' % (e))
+				msg = d.decode('utf-8').split('|')
+				if self.token != '':
 					try:
-						printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
-						time.sleep(5.1)
-						printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
-						self.line_send_image(imgpath,d.decode('utf-8').split('|')[1])
+						printM('Uploading image to LINE %s' % (imgpath), self.sender)
+						self.line_send_image(imgpath,msg[1],self.token)
 						printM('Sent image', sender=self.sender)
-
 					except Exception as e:
 						printE('Could not send image - %s' % (e))
-						response = None
+						try:
+							printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
+							time.sleep(5.1)
+							printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
+							self.line_send_image(imgpath,msg[1],self.token)
+							printM('Sent image', sender=self.sender)
+
+						except Exception as e:
+							printE('Could not send image - %s' % (e))
+							response = None
+				# token2
+				if msg[2]=='F' and self.token2 != '':
+					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])):
+						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
+						try:
+							printM('Uploading image to LINE %s' % (imgpath), self.sender)
+							self.line_send_image(imgpath,message+msg[1],self.token2)
+							printM('Sent image', sender=self.sender)
+						except Exception as e:
+							printE('Could not send image - %s' % (e))
+							try:
+								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
+								time.sleep(5.1)
+								printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
+								self.line_send_image(imgpath,message+msg[1],self.token2)
+								printM('Sent image', sender=self.sender)
+
+							except Exception as e:
+								printE('Could not send image - %s' % (e))
+								response = None
+					else:
+						printM('Do not send LINE for token 2, becuase Shindo is less than 3.')
 			else:
 				printM('Could not find image: %s' % (imgpath), sender=self.sender)
 

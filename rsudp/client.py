@@ -342,11 +342,33 @@ def run(settings, debug):
 
 # AstroTaka -----------------
 	if settings['line']['enabled']:
-		token = settings['line']['token']
-		send_images = settings['line']['send_images']
+
+		try:
+			if settings['line']['token']:
+				token = settings['line']['token']
+			else:
+				token = ''
+		except KeyError:
+			token2 = ''
+
+		try:
+			if settings['line']['token2']:
+				token2 = settings['line']['token2']
+			else:
+				token2 = ''
+		except KeyError:
+			token2 = ''
+
+		try:
+			if settings['line']['send_images']:
+				send_images = settings['line']['send_images']
+			else:
+				send_images = True
+		except KeyError:
+			send_images = True
 		
 		q = mk_q()
-		line = LINE(q=q, token=token, send_images=send_images)
+		line = LINE(q=q, token=token, token2=token2, send_images=send_images)
 		mk_p(line)
 # ---------------------------
 
