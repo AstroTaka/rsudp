@@ -289,7 +289,8 @@ class Alert(rs.ConsumerThread):
 					round(np.max(self.stalta[-50:]), 4)
 					)
 			print(COLOR['current'] + COLOR['bold'] + msg + COLOR['white'], end='', flush=True)
-
+			if self.stalta.max() > self.thresh:
+				printM(msg)
 
 	def run(self):
 		"""
