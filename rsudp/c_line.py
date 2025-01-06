@@ -108,7 +108,33 @@ class LINE(rs.ConsumerThread):
 			response = None
 			if os.path.exists(imgpath):
 				msg = d.decode('utf-8').split('|')
-				if self.token != '':
+				already_sent = False
+				# token2
+				if self.token2 != '':
+					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])):
+						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
+						try:
+							printM('Uploading image to LINE %s' % (imgpath), self.sender)
+							self.line_send_image(imgpath,message+msg[1],self.token2)
+							printM('Sent image', sender=self.sender)
+							already_sent = True
+						except Exception as e:
+							printE('Could not send image - %s' % (e))
+							try:
+								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
+								time.sleep(5.1)
+								printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
+								self.line_send_image(imgpath,message+msg[1],self.token2)
+								printM('Sent image', sender=self.sender)
+								already_sent = True
+
+							except Exception as e:
+								printE('Could not send image - %s' % (e))
+								response = None
+					else:
+						printM('Do not send LINE for token 2, becuase Shindo is less than 3.')
+
+				if self.token != '' and not already_sent:
 					try:
 						printM('Uploading image to LINE %s' % (imgpath), self.sender)
 						self.line_send_image(imgpath,msg[1],self.token)
@@ -125,28 +151,6 @@ class LINE(rs.ConsumerThread):
 						except Exception as e:
 							printE('Could not send image - %s' % (e))
 							response = None
-				# token2
-				if msg[2]=='F' and self.token2 != '':
-					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])):
-						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
-						try:
-							printM('Uploading image to LINE %s' % (imgpath), self.sender)
-							self.line_send_image(imgpath,message+msg[1],self.token2)
-							printM('Sent image', sender=self.sender)
-						except Exception as e:
-							printE('Could not send image - %s' % (e))
-							try:
-								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
-								time.sleep(5.1)
-								printM('Uploading image to LINE (2nd try) %s' % (imgpath), self.sender)
-								self.line_send_image(imgpath,message+msg[1],self.token2)
-								printM('Sent image', sender=self.sender)
-
-							except Exception as e:
-								printE('Could not send image - %s' % (e))
-								response = None
-					else:
-						printM('Do not send LINE for token 2, becuase Shindo is less than 3.')
 			else:
 				printM('Could not find image: %s' % (imgpath), sender=self.sender)
 

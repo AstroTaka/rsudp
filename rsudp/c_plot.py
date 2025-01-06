@@ -349,7 +349,7 @@ class Plot:
 						  fontsize=15, color=self.fgcolor, x=0.52, fontname='MotoyaLMaru')
 
 		# save figure
-		self.savefig(event_time=event[1], event_time_str=event_time_str,force_alert=True)
+		self.savefig(event_time=event[1], event_time_str=event_time_str)
 
 		# reset title
 		self._set_fig_title()
@@ -359,7 +359,7 @@ class Plot:
 	def savefig(self, event_time=rs.UTCDateTime.now(),
 # AstroTaka -----------------
 #				event_time_str=rs.UTCDateTime.now().strftime('%Y-%m-%d-%H%M%S')):
-				event_time_str=rs.UTCDateTime.now().strftime('%Y-%m-%d-%H%M%S'), force_alert=False):
+				event_time_str=rs.UTCDateTime.now().strftime('%Y-%m-%d-%H%M%S')):
 # ---------------------------
 		'''
 		Saves the figure and puts an IMGPATH message on the master queue.
@@ -378,12 +378,7 @@ class Plot:
 		# imgpath requires a UTCDateTime and a string figure path
 # AstroTaka -----------------
 		#self.master_queue.put(helpers.msg_imgpath(event_time, figname))
-		force_alert_str = ''
-		if force_alert:
-			force_alert_str = 'F'
-		else:
-			force_alert_str = 'N'
-		shindo_str = '|震度'+self.shindo_name+'('+self.shindo_ext+')|'+force_alert_str
+		shindo_str = '|震度'+self.shindo_name+'('+self.shindo_ext+')|'
 		self.master_queue.put(helpers.msg_imgpath(event_time, figname+shindo_str))
 # ---------------------------
 
@@ -769,7 +764,7 @@ class Plot:
 			traceback.print_exc()
 			self.shindo = -1
 			self.shindo_ext = '-1'
-			self.shindo_name = 'ERROR'
+			self.shindo_name = '不明'
 # ---------------------------
 		i = 0
 		for i in range(self.num_chans):	# for each channel, update the plots
