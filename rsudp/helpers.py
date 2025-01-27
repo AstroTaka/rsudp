@@ -117,7 +117,7 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "enabled": false,
     "user": "YOUR_PUSHOVER_USER",
     "token": "YOUR_PUSHOVER_TOKEN",
-    "send_images": true},
+    "send_images": true}
 }
 
 """ % (output_dir)

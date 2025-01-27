@@ -38,7 +38,7 @@ class Pushover(rs.ConsumerThread):
 
 		printM('Starting.', self.sender)
 
-	def pushover_send_image(self, msg, filename, priority):
+	def pushover_send_image(self, filename, msg, priority):
 		url = "https://api.pushover.net/1/messages.json"
 		data = {
 			"token": self.token,

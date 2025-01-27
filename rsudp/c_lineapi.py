@@ -144,7 +144,7 @@ class LINEApi(rs.ConsumerThread):
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
-		if self.token != '':
+		if self.token1 != '':
 			try:
 				printM('Sending alert...', sender=self.sender)
 				self.line_api_send_message(message, self.token1, self.user1)
@@ -198,7 +198,7 @@ class LINEApi(rs.ConsumerThread):
 					else:
 						printM('Do not send LINE API for token 2, becuase Shindo is less than 3.')
 
-				if self.token1 != '' and self.user1 != '' and not already_sent:
+				if self.token1 != '' and self.user1 != '':
 					try:
 						printM('Uploading image to LINE API %s' % (imgpath), self.sender)
 						self.line_api_send_image(imgpath, msg[1], self.token1, self.user1)
