@@ -99,11 +99,25 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "interval": 10,
     "deconvolve": false,
     "units": "VEL"},
-"LINE": {
+"line": {
     "enabled": false,
     "token": "YOUR_LINE_NOTIFY_TOKEN",
     "token2": "YOUR_LINE_NOTIFY_TOKEN2",
-    "send_images": true}
+    "send_images": true},
+"lineapi": {
+    "enabled": false,
+    "token1": "YOUR_LINE_API_ACCESS_TOKEN1",
+    "user1": "YOUR_LINE_API_USER1",
+    "token2": "YOUR_LINE_API_ACCESS_TOKEN2",
+    "user2": "YOUR_LINE_API_USER2",
+    "image_dir_path": "YOUR_IMAGE_DIR_PATH",
+    "image_url_path": "YOUR_IMAGE_URL_PATH",
+    "send_images": true},
+"pushover": {
+    "enabled": false,
+    "user": "YOUR_PUSHOVER_USER",
+    "token": "YOUR_PUSHOVER_TOKEN",
+    "send_images": true},
 }
 
 """ % (output_dir)

@@ -28,6 +28,8 @@ from rsudp.t_testdata import TestData
 import pkg_resources as pr
 # AstroTaka -----------------
 from rsudp.c_line import LINE
+from rsudp.c_lineapi import LINEApi
+from rsudp.c_pushover import Pushover
 # ---------------------------
 
 DESTINATIONS, THREADS = [], []
@@ -370,6 +372,99 @@ def run(settings, debug):
 		q = mk_q()
 		line = LINE(q=q, token=token, token2=token2, send_images=send_images)
 		mk_p(line)
+
+	if settings['lineapi']['enabled']:
+
+		try:
+			if settings['lineapi']['token1']:
+				token1 = settings['lineapi']['token1']
+			else:
+				token1 = ''
+		except KeyError:
+			token1 = ''
+
+		try:
+			if settings['lineapi']['token2']:
+				token2 = settings['lineapi']['token2']
+			else:
+				token2 = ''
+		except KeyError:
+			token2 = ''
+
+		try:
+			if settings['lineapi']['user1']:
+				user1 = settings['lineapi']['user1']
+			else:
+				user1 = ''
+		except KeyError:
+			user1 = ''
+
+		try:
+			if settings['lineapi']['user2']:
+				user2 = settings['lineapi']['user2']
+			else:
+				user2 = ''
+		except KeyError:
+			user2 = ''
+
+		try:
+			if settings['lineapi']['image_dir_path']:
+				image_dir_path = settings['lineapi']['image_dir_path']
+			else:
+				image_dir_path = ''
+		except KeyError:
+			image_dir_path = ''
+
+		try:
+			if settings['lineapi']['image_url_path']:
+				image_url_path = settings['lineapi']['image_url_path']
+			else:
+				image_url_path = ''
+		except KeyError:
+			image_url_path = ''
+
+		try:
+			if settings['lineapi']['send_images']:
+				send_images = settings['lineapi']['send_images']
+			else:
+				send_images = True
+		except KeyError:
+			send_images = True
+		
+		q = mk_q()
+		lineapi = LINEApi(q=q, token1=token1, token2=token2, user1=user1, user2=user2, 
+					image_url_path=image_url_path, image_dir_path=image_dir_path, send_images=send_images)
+		mk_p(lineapi)
+
+	if settings['pushover']['enabled']:
+
+		try:
+			if settings['pushover']['user']:
+				user = settings['pushover']['user']
+			else:
+				user = ''
+		except KeyError:
+			user = ''
+
+		try:
+			if settings['pushover']['token']:
+				token = settings['pushover']['token']
+			else:
+				token = ''
+		except KeyError:
+			token = ''
+
+		try:
+			if settings['pushover']['send_images']:
+				send_images = settings['pushover']['send_images']
+			else:
+				send_images = True
+		except KeyError:
+			send_images = True
+		
+		q = mk_q()
+		pushover = Pushover(q=q, user=user, token=token, send_images=send_images)
+		mk_p(pushover)
 # ---------------------------
 
 	if settings['rsam']['enabled']:
