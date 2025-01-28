@@ -196,7 +196,7 @@ class LINEApi(rs.ConsumerThread):
 								printE('Could not send image - %s' % (e))
 								response = None
 					else:
-						printM('Do not send LINE API for token 2, becuase Shindo is less than 3.')
+						printM('Do not send LINE API for token 2, becuase Shindo is less than 3.', sender=self.sender)
 
 				if self.token1 != '' and self.user1 != '':
 					try:

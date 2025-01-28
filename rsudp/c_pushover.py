@@ -11,7 +11,7 @@ import traceback
 #import telegram as tg
 
 class Pushover(rs.ConsumerThread):
-	def __init__(self, user, token, q=False, send_images=False):
+	def __init__(self, user, token, send_over_shindo3=False, q=False, send_images=False):
 		"""
 		Initializing the Pushover message posting thread.
 
@@ -22,6 +22,7 @@ class Pushover(rs.ConsumerThread):
 		self.send_images = send_images
 		self.user = user
 		self.token = token
+		self.send_over_shindo3 = send_over_shindo3
 		self.fmt = '%Y-%m-%d %H:%M:%S.%f'
 		self.region = ' - region: %s' % rs.region.title() if rs.region else ''
 		self.message0 = '(Raspberry Shake station %s.%s%s) Event detected at' % (rs.net, rs.stn, self.region)
@@ -40,12 +41,24 @@ class Pushover(rs.ConsumerThread):
 
 	def pushover_send_image(self, filename, msg, priority):
 		url = "https://api.pushover.net/1/messages.json"
-		data = {
-			"token": self.token,
-			"user": self.user,
-			"message": msg,
-			"priority": priority
-		}
+		
+		if priority==2:
+			data = {
+				"token": self.token,
+				"user": self.user,
+				"message": msg,
+				"priority": priority,
+				"retry": 30,
+				"expire": 1800,
+				"sound": "siren"
+			}
+		else:
+			data = {
+				"token": self.token,
+				"user": self.user,
+				"message": msg,
+				"priority": priority
+			}
 		res = ''
 		with open(filename, 'rb') as f:
 			res = requests.post(url, data=data, files={'attachment': f}).text
@@ -82,6 +95,11 @@ class Pushover(rs.ConsumerThread):
 
 		:param bytes d: queue message
 		'''
+
+		if self.send_over_shindo3:
+			printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
+			return
+
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
@@ -116,6 +134,12 @@ class Pushover(rs.ConsumerThread):
 				priority = 0
 				if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])):
 					priority=1
+					if not (('震度３' in msg[1]) or ('震度４' in msg[1])):
+						priority=2
+
+				if self.send_over_shindo3 and priority == 0:
+					printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
+					return
 
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
 				try:

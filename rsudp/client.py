@@ -455,6 +455,14 @@ def run(settings, debug):
 			token = ''
 
 		try:
+			if settings['pushover']['send_over_shindo3']:
+				send_over_shindo3 = settings['pushover']['send_over_shindo3']
+			else:
+				send_over_shindo3 = False
+		except KeyError:
+			send_over_shindo3 = False
+
+		try:
 			if settings['pushover']['send_images']:
 				send_images = settings['pushover']['send_images']
 			else:
@@ -463,7 +471,7 @@ def run(settings, debug):
 			send_images = True
 		
 		q = mk_q()
-		pushover = Pushover(q=q, user=user, token=token, send_images=send_images)
+		pushover = Pushover(q=q, user=user, token=token, send_over_shindo3=send_over_shindo3, send_images=send_images)
 		mk_p(pushover)
 # ---------------------------
 
