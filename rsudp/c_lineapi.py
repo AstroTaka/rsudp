@@ -198,7 +198,7 @@ class LINEApi(rs.ConsumerThread):
 					else:
 						printM('Do not send LINE API for token 2, becuase Shindo is less than 3.', sender=self.sender)
 
-				if self.token1 != '' and self.user1 != '':
+				if self.token1 != '' and self.user1 != '' and ( not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])) or not "_10" in imgpath ):
 					try:
 						printM('Uploading image to LINE API %s' % (imgpath), self.sender)
 						self.line_api_send_image(imgpath, msg[1], self.token1, self.user1)
