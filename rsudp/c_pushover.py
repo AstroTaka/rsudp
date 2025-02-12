@@ -88,6 +88,36 @@ class Pushover(rs.ConsumerThread):
 		else:
 			return d
 
+	def get_kyoshin_msg(self):
+		url = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
+		kyoshin_time = (datetime.now()-timedelta(seconds=2)).strftime('%Y%m%d%H%M%S')
+		header= {"content-type": "application/json"}
+		try:
+			res = requests.get(url+kyoshin_time+'.json',headers=header).json()
+
+			alertflg=''
+			if 'alertflg' in res:
+				alertflg = '/'+res['alertflg']
+				if '予報' in alertflg:
+					alertflg=''
+
+			report_num=''
+			if res['is_final']:
+				report_num='最終報'
+			else:
+				report_num='第'+res['report_num']+'報'
+
+			msg = ('震源地:'+res['region_name']+'/M'+res['magunitude']+'/深さ'+
+				res['depth']+'/最大予測震度'+res['calcintensity']+'/'+
+				report_num+alertflg)
+
+			if res['result']['message'] != "":
+				msg = '地震発生の確認ができませんでした'
+				
+		except:
+			msg=''
+		
+		return msg
 
 	def _when_alarm(self, d):
 		'''
@@ -98,7 +128,8 @@ class Pushover(rs.ConsumerThread):
 
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
-		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
+		kyoshin_msg = self.get_kyoshin_msg()
+		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 
 		if self.send_over_shindo3:
 			printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
@@ -126,6 +157,8 @@ class Pushover(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
+			kyoshin_msg = self.get_kyoshin_msg()
+
 			imgpath = helpers.get_msg_path(d).split('|')[0]
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			if os.path.exists(imgpath):
@@ -141,10 +174,10 @@ class Pushover(rs.ConsumerThread):
 					printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
 					return
 
-				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
+				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s\n' % (self.message1, self.last_event_str, kyoshin_msg)
 				try:
 					printM('Uploading image to Pushover %s' % (imgpath), self.sender)
-					self.pushover_send_image(imgpath,message+msg[1],priority)
+					self.pushover_send_image(imgpath,message+'実際の震度：'+msg[1],priority)
 					printM('Sent image', sender=self.sender)
 					already_sent = True
 				except Exception as e:

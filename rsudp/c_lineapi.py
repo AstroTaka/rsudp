@@ -135,6 +135,37 @@ class LINEApi(rs.ConsumerThread):
 			return d
 
 
+	def get_kyoshin_msg(self):
+		url = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
+		kyoshin_time = (datetime.now()-timedelta(seconds=2)).strftime('%Y%m%d%H%M%S')
+		header= {"content-type": "application/json"}
+		try:
+			res = requests.get(url+kyoshin_time+'.json',headers=header).json()
+
+			alertflg=''
+			if 'alertflg' in res:
+				alertflg = '/'+res['alertflg']
+				if '予報' in alertflg:
+					alertflg=''
+
+			report_num=''
+			if res['is_final']:
+				report_num='最終報'
+			else:
+				report_num='第'+res['report_num']+'報'
+
+			msg = ('震源地:'+res['region_name']+'/M'+res['magunitude']+'/深さ'+
+				res['depth']+'/最大予測震度'+res['calcintensity']+'/'+
+				report_num+alertflg)
+
+			if res['result']['message'] != "":
+				msg = '地震発生の確認ができませんでした'
+
+		except:
+			msg=''
+		
+		return msg
+
 	def _when_alarm(self, d):
 		'''
 		Send a LINE API in an alert scenario.
@@ -143,7 +174,8 @@ class LINEApi(rs.ConsumerThread):
 		'''
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
-		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/' % (self.message1, self.last_event_str)
+		kyoshin_msg = self.get_kyoshin_msg()
+		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 		if self.token1 != '':
 			try:
 				printM('Sending alert...', sender=self.sender)
@@ -171,12 +203,14 @@ class LINEApi(rs.ConsumerThread):
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			response = None
 			if os.path.exists(imgpath):
+				kyoshin_msg = self.get_kyoshin_msg()
+
 				msg = d.decode('utf-8').split('|')
 				already_sent = False
 				# token2
 				if self.token2 != '' and self.user2 != '':
 					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])):
-						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n' % (self.message1, self.last_event_str)
+						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s\n' % (self.message1, self.last_event_str, kyoshin_msg)
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
 							self.line_api_send_image(imgpath, message+msg[1], self.token2, self.user2)
@@ -188,7 +222,7 @@ class LINEApi(rs.ConsumerThread):
 								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 								time.sleep(5.1)
 								printM('Uploading image to LINE API (2nd try) %s' % (imgpath), self.sender)
-								self.line_api_send_image(imgpath, message+msg[1], self.token2, self.user2)
+								self.line_api_send_image(imgpath, message+'実際の震度：'+msg[1], self.token2, self.user2)
 								printM('Sent image', sender=self.sender)
 								already_sent = True
 
@@ -202,7 +236,7 @@ class LINEApi(rs.ConsumerThread):
 					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])) or "_10" in imgpath:
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
-							self.line_api_send_image(imgpath, msg[1], self.token1, self.user1)
+							self.line_api_send_image(imgpath, kyoshin_msg+'\n実際の震度：'+msg[1], self.token1, self.user1)
 							printM('Sent image', sender=self.sender)
 						except Exception as e:
 							printE('Could not send image - %s' % (e))
