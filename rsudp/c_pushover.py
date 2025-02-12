@@ -112,7 +112,7 @@ class Pushover(rs.ConsumerThread):
 				report_num+alertflg)
 
 			if res['result']['message'] != "":
-				msg = '地震発生の確認ができませんでした'
+				msg = '地震の発生が確認できませんでした。'
 				
 		except:
 			msg=''
@@ -177,7 +177,7 @@ class Pushover(rs.ConsumerThread):
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s\n' % (self.message1, self.last_event_str, kyoshin_msg)
 				try:
 					printM('Uploading image to Pushover %s' % (imgpath), self.sender)
-					self.pushover_send_image(imgpath,message+'実際の震度：'+msg[1],priority)
+					self.pushover_send_image(imgpath,message+'地震計の震度：'+msg[1],priority)
 					printM('Sent image', sender=self.sender)
 					already_sent = True
 				except Exception as e:

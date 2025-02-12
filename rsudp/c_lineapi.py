@@ -159,7 +159,7 @@ class LINEApi(rs.ConsumerThread):
 				report_num+alertflg)
 
 			if res['result']['message'] != "":
-				msg = '地震発生の確認ができませんでした'
+				msg = '地震の発生が確認できませんでした。'
 
 		except:
 			msg=''
@@ -236,7 +236,7 @@ class LINEApi(rs.ConsumerThread):
 					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])) or "_10" in imgpath:
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
-							self.line_api_send_image(imgpath, kyoshin_msg+'\n実際の震度：'+msg[1], self.token1, self.user1)
+							self.line_api_send_image(imgpath, kyoshin_msg+'\n地震計の震度：'+msg[1], self.token1, self.user1)
 							printM('Sent image', sender=self.sender)
 						except Exception as e:
 							printE('Could not send image - %s' % (e))
