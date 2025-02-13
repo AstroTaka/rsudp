@@ -186,7 +186,7 @@ class Pushover(rs.ConsumerThread):
 						printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 						time.sleep(5.1)
 						printM('Uploading image to Pushover (2nd try) %s' % (imgpath), self.sender)
-						self.pushover_send_image(imgpath,message+msg[1],priority)
+						self.pushover_send_image(imgpath,message+'地震計の震度：'+msg[1],priority)
 						printM('Sent image', sender=self.sender)
 
 					except Exception as e:
