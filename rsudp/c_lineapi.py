@@ -213,7 +213,7 @@ class LINEApi(rs.ConsumerThread):
 						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s\n' % (self.message1, self.last_event_str, kyoshin_msg)
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
-							self.line_api_send_image(imgpath, message+'\n地震計の震度：'+msg[1], self.token2, self.user2)
+							self.line_api_send_image(imgpath, message+'地震計の震度：'+msg[1], self.token2, self.user2)
 							printM('Sent image', sender=self.sender)
 							already_sent = True
 						except Exception as e:
@@ -222,7 +222,7 @@ class LINEApi(rs.ConsumerThread):
 								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 								time.sleep(5.1)
 								printM('Uploading image to LINE API (2nd try) %s' % (imgpath), self.sender)
-								self.line_api_send_image(imgpath, message+'\n地震計の震度：'+msg[1], self.token2, self.user2)
+								self.line_api_send_image(imgpath, message+'地震計の震度：'+msg[1], self.token2, self.user2)
 								printM('Sent image', sender=self.sender)
 								already_sent = True
 
