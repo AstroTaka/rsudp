@@ -211,7 +211,7 @@ class Pushover(rs.ConsumerThread):
 				depth = 0.0
 
 			if latitude != 0 and longitude !=0:
-				epicenterDistance  = self.calc_distance(latitude, longitude, rs.inv[0][0].latitude, rs.inv[0][0].logitude)
+				epicenterDistance  = self.calc_distance(latitude, longitude, rs.inv[0][-1].latitude, rs.inv[0][-1].logitude)
 				long = 10 ** (0.5 * mag - 1.85) / 2
 				hypocenterDistance = (depth ** 2 + epicenterDistance ** 2) ** 0.5 - long
 				x = max([hypocenterDistance, 3])
@@ -227,7 +227,7 @@ class Pushover(rs.ConsumerThread):
 		except:
 			msg=''
 		
-		return (msg, intensity)
+		return msg, intensity
 
 	def _when_alarm(self, d):
 		'''
@@ -238,7 +238,7 @@ class Pushover(rs.ConsumerThread):
 
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
-		(kyoshin_msg, intensity) = self.get_kyoshin_msg()
+		kyoshin_msg, intensity = self.get_kyoshin_msg()
 		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 
 		if self.send_over_shindo3:
@@ -273,7 +273,7 @@ class Pushover(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
-			(kyoshin_msg, intensity) = self.get_kyoshin_msg()
+			kyoshin_msg, intensity = self.get_kyoshin_msg()
 
 			imgpath = helpers.get_msg_path(d).split('|')[0]
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
