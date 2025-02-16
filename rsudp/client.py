@@ -424,6 +424,14 @@ def run(settings, debug):
 			image_url_path = ''
 
 		try:
+			if settings['lineapi']['location_name']:
+				location_name = settings['lineapi']['location_name']
+			else:
+				location_name = "地震計が設置されている場所"
+		except KeyError:
+			location_name = "地震計が設置されている場所"
+
+		try:
 			if settings['lineapi']['send_images']:
 				send_images = settings['lineapi']['send_images']
 			else:
@@ -433,7 +441,7 @@ def run(settings, debug):
 		
 		q = mk_q()
 		lineapi = LINEApi(q=q, token1=token1, token2=token2, user1=user1, user2=user2, 
-					image_url_path=image_url_path, image_dir_path=image_dir_path, send_images=send_images)
+					image_url_path=image_url_path, image_dir_path=image_dir_path, location_name=location_name, send_images=send_images)
 		mk_p(lineapi)
 
 	if settings['pushover']['enabled']:
@@ -463,6 +471,14 @@ def run(settings, debug):
 			send_over_shindo3 = False
 
 		try:
+			if settings['pushover']['location_name']:
+				location_name = settings['pushover']['location_name']
+			else:
+				location_name = "地震計が設置されている場所"
+		except KeyError:
+			location_name = "地震計が設置されている場所"
+
+		try:
 			if settings['pushover']['send_images']:
 				send_images = settings['pushover']['send_images']
 			else:
@@ -471,7 +487,7 @@ def run(settings, debug):
 			send_images = True
 		
 		q = mk_q()
-		pushover = Pushover(q=q, user=user, token=token, send_over_shindo3=send_over_shindo3, send_images=send_images)
+		pushover = Pushover(q=q, user=user, token=token, location_name=location_name, send_over_shindo3=send_over_shindo3, send_images=send_images)
 		mk_p(pushover)
 # ---------------------------
 

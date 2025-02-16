@@ -112,12 +112,14 @@ def default_settings(output_dir='%s/rsudp' % os.path.expanduser('~').replace('\\
     "user2": "YOUR_LINE_API_USER2",
     "image_dir_path": "YOUR_IMAGE_DIR_PATH",
     "image_url_path": "YOUR_IMAGE_URL_PATH",
+	"location_name": "YOUR_LOCATION_NAME",
     "send_images": true},
 "pushover": {
     "enabled": false,
     "user": "YOUR_PUSHOVER_USER",
     "token": "YOUR_PUSHOVER_TOKEN",
 	"send_over_shindo3": false,
+	"location_name": "YOUR_LOCATION_NAME",
     "send_images": true}
 }
 
