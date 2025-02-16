@@ -255,7 +255,7 @@ class LINEApi(rs.ConsumerThread):
 				msg = msg + '\n' + self.location_name + 'の最大予測震度：' + shindo + '(' + "{:.1f}".format(intensity) +')'
 
 			if res['result']['message'] != "":
-				msg = '地震の発生が確認できませんでした。'
+				msg = '地震発生の確認ができませんでした。'
 
 		except:
 			msg=''
