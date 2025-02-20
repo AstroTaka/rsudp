@@ -211,7 +211,7 @@ class Pushover(rs.ConsumerThread):
 				depth = 0.0
 
 			if latitude != 0 and longitude !=0:
-				epicenterDistance  = self.calc_distance(latitude, longitude, rs.inv[0][-1].latitude, rs.inv[0][-1].logitude)
+				epicenterDistance  = self.calc_distance(latitude, longitude, rs.inv[0][-1].latitude, rs.inv[0][-1].longitude)
 				long = 10 ** (0.5 * mag - 1.85) / 2
 				hypocenterDistance = (depth ** 2 + epicenterDistance ** 2) ** 0.5 - long
 				x = max([hypocenterDistance, 3])
