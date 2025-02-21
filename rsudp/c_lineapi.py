@@ -268,7 +268,7 @@ class LINEApi(rs.ConsumerThread):
 
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
-			msg=''
+			msg='地震発生の確認ができませんでした。*'
 		
 		return msg, intensity
 
