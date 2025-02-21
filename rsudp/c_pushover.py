@@ -179,11 +179,20 @@ class Pushover(rs.ConsumerThread):
 
 	def get_kyoshin_msg(self):
 		url = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
-		kyoshin_time = (datetime.now()-timedelta(seconds=2)).strftime('%Y%m%d%H%M%S')
+		now = datetime.now()
+		kyoshin_time0 = (now).strftime('%Y%m%d%H%M%S')
+		kyoshin_time1 = (now-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+		kyoshin_time2 = (now-timedelta(seconds=2)).strftime('%Y%m%d%H%M%S')
 		header= {"content-type": "application/json"}
 		intensity = 0.0
 		try:
-			res = requests.get(url+kyoshin_time+'.json',headers=header).json()
+			res = requests.get(url+kyoshin_time2+'.json',headers=header).json()
+
+			if res['result']['message'] != "":
+				res = requests.get(url+kyoshin_time1+'.json',headers=header).json()
+
+			if res['result']['message'] != "":
+				res = requests.get(url+kyoshin_time0+'.json',headers=header).json()
 
 			alertflg=''
 			if 'alertflg' in res:
@@ -225,6 +234,7 @@ class Pushover(rs.ConsumerThread):
 				msg = '地震発生の確認ができませんでした。'
 				
 		except:
+			printE('%s' % (traceback.format_exc()), self.sender)
 			msg=''
 		
 		return msg, intensity
@@ -257,14 +267,14 @@ class Pushover(rs.ConsumerThread):
 			printM('Sent Pushover: %s' % (message), sender=self.sender)
 
 		except Exception as e:
-			printE('Could not send alert - %s' % (e))
+			printE('Could not send alert - %s' % (e), sender=self.sender)
 			try:
 				printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
 				time.sleep(5)
 				self.pushover_send_message(message, priority)
 				printM('Sent Pushover: %s' % (message), sender=self.sender)
 			except Exception as e:
-				printE('Could not send alert - %s' % (e))
+				printE('Could not send alert - %s' % (e), sender=self.sender)
 
 	def _when_img(self, d):
 		'''
@@ -297,7 +307,7 @@ class Pushover(rs.ConsumerThread):
 					printM('Sent image', sender=self.sender)
 					already_sent = True
 				except Exception as e:
-					printE('Could not send image - %s' % (e))
+					printE('Could not send image - %s' % (e), sender=self.sender)
 					try:
 						printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 						time.sleep(5.1)
@@ -306,7 +316,7 @@ class Pushover(rs.ConsumerThread):
 						printM('Sent image', sender=self.sender)
 
 					except Exception as e:
-						printE('Could not send image - %s' % (e))
+						printE('Could not send image - %s' % (e), sender=self.sender)
 			else:
 				printM('Could not find image: %s' % (imgpath), sender=self.sender)
 
