@@ -292,10 +292,10 @@ class LINEApi(rs.ConsumerThread):
 			if count==0:
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 			else:
-				if not find_kyoshin:
-					printE('Cannot find Kyoshin data again... Give Up!', sender=self.sender, spaces=True)
-					break
-				message = kyoshin_msg
+				if find_kyoshin:
+					message = kyoshin_msg
+				else:
+					message = '地震は発生していないと思われます。'
 			
 			if self.token1 != '':
 				try:
@@ -331,9 +331,10 @@ class LINEApi(rs.ConsumerThread):
 			
 			if find_kyoshin:
 				break;
-	
-			printE('Cannot find Kyoshin data and Waiting 3 seconds and trying to send again...', sender=self.sender, spaces=True)
-			time.sleep(3)
+			
+			if count==0:
+				printE('Cannot find Kyoshin data and Waiting 3 seconds and trying to send again...', sender=self.sender, spaces=True)
+				time.sleep(3)
 
 
 	def _when_img(self, d):
