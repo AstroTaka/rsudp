@@ -219,12 +219,15 @@ class LINEApi(rs.ConsumerThread):
 		header= {"content-type": "application/json"}
 		intensity = 0.0
 		try:
+			kyoshin_time = kyoshin_time2
 			res = requests.get(url+kyoshin_time2+'.json',headers=header).json()
 
 			if res['result']['message'] != "":
+				kyoshin_time = kyoshin_time1
 				res = requests.get(url+kyoshin_time1+'.json',headers=header).json()
 
 			if res['result']['message'] != "":
+				kyoshin_time = kyoshin_time0
 				res = requests.get(url+kyoshin_time0+'.json',headers=header).json()
 
 			alertflg=''
@@ -264,11 +267,11 @@ class LINEApi(rs.ConsumerThread):
 				msg = msg + '\n' + self.location_name + 'の最大予測震度：' + shindo + '(' + "{:.1f}".format(intensity) +')'
 
 			if res['result']['message'] != "":
-				msg = '地震発生の確認ができませんでした。'
+				msg = '地震発生の確認ができませんでした。\n(' + kyoshin_time + ')'
 
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
-			msg='地震発生の確認ができませんでした。*'
+			msg='地震発生の確認ができませんでした。'
 		
 		return msg, intensity
 
