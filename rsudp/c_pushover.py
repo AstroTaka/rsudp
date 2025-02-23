@@ -261,6 +261,7 @@ class Pushover(rs.ConsumerThread):
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 			else:
 				if not find_kyoshin:
+					printE('Cannot find Kyoshin data again... Give Up!', sender=self.sender, spaces=True)
 					break
 				message = kyoshin_msg
 
