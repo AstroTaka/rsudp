@@ -185,6 +185,7 @@ class Pushover(rs.ConsumerThread):
 		kyoshin_time2 = (now-timedelta(seconds=2)).strftime('%Y%m%d%H%M%S')
 		header= {"content-type": "application/json"}
 		intensity = 0.0
+		find_kyoshin = True
 		try:
 			kyoshin_time = kyoshin_time2
 			res = requests.get(url+kyoshin_time2+'.json',headers=header).json()
@@ -235,12 +236,14 @@ class Pushover(rs.ConsumerThread):
 
 			if res['result']['message'] != "":
 				msg = '地震発生の確認ができませんでした。\n(' + kyoshin_time + ')'
-				
+				find_kyoshin = False
+
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
 			msg='地震発生の確認ができませんでした。'
+			find_kyoshin = False
 		
-		return msg, intensity
+		return msg, intensity, find_kyoshin
 
 	def _when_alarm(self, d):
 		'''
@@ -251,33 +254,46 @@ class Pushover(rs.ConsumerThread):
 
 		event_time = helpers.fsec(helpers.get_msg_time(d))
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
-		kyoshin_msg, intensity = self.get_kyoshin_msg()
-		message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 
-		if self.send_over_shindo3:
-			printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
-			return
+		for count in range(2):
+			kyoshin_msg, intensity, find_kyoshin = self.get_kyoshin_msg()
+			if count==0:
+				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
+			else:
+				if not find_kyoshin:
+					break
+				message = kyoshin_msg
 
-		priority = 0
-		if intensity >= 2.5:
-			priority=1
-			if intensity >= 4.5:
-				priority=2
+			if self.send_over_shindo3 and intensity <= 3.5:
+				printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
+				return
 
-		try:
-			printM('Sending alert...', sender=self.sender)
-			self.pushover_send_message(message, priority)
-			printM('Sent Pushover: %s' % (message), sender=self.sender)
+			priority = 0
+			if intensity >= 2.5:
+				priority=1
+				if intensity >= 4.5:
+					priority=2
 
-		except Exception as e:
-			printE('Could not send alert - %s' % (e), sender=self.sender)
 			try:
-				printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
-				time.sleep(5)
+				printM('Sending alert...', sender=self.sender)
 				self.pushover_send_message(message, priority)
 				printM('Sent Pushover: %s' % (message), sender=self.sender)
+
 			except Exception as e:
 				printE('Could not send alert - %s' % (e), sender=self.sender)
+				try:
+					printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
+					time.sleep(5)
+					self.pushover_send_message(message, priority)
+					printM('Sent Pushover: %s' % (message), sender=self.sender)
+				except Exception as e:
+					printE('Could not send alert - %s' % (e), sender=self.sender)
+			
+			if find_kyoshin:
+				break
+
+			printE('Cannot find Kyoshin data and Waiting 3 seconds and trying to send again...', sender=self.sender, spaces=True)
+			time.sleep(3)
 
 	def _when_img(self, d):
 		'''
@@ -286,7 +302,7 @@ class Pushover(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
-			kyoshin_msg, intensity = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin = self.get_kyoshin_msg()
 
 			imgpath = helpers.get_msg_path(d).split('|')[0]
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
