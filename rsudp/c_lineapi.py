@@ -313,6 +313,8 @@ class LINEApi(rs.ConsumerThread):
 					except Exception as e:
 						printE('Could not send alert - %s' % (e), sender=self.sender)
 
+			message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
+
 			if intensity >= 3.5 and self.token2 != '':
 				try:
 					printM('Sending alert...', sender=self.sender)
@@ -330,7 +332,7 @@ class LINEApi(rs.ConsumerThread):
 						printE('Could not send alert - %s' % (e), sender=self.sender)
 			
 			if find_kyoshin:
-				break;
+				break
 			
 			if count==0:
 				printE('Cannot find Kyoshin data and Waiting 3 seconds and trying to send again...', sender=self.sender, spaces=True)
