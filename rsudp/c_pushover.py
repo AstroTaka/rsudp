@@ -186,6 +186,7 @@ class Pushover(rs.ConsumerThread):
 		header= {"content-type": "application/json"}
 		intensity = 0.0
 		find_kyoshin = True
+		access_kyoshin = False
 		try:
 			kyoshin_time = kyoshin_time2
 			res = requests.get(url+kyoshin_time2+'.json',headers=header,timeout=1).json()
@@ -197,6 +198,8 @@ class Pushover(rs.ConsumerThread):
 			if res['result']['message'] != "":
 				kyoshin_time = kyoshin_time0
 				res = requests.get(url+kyoshin_time0+'.json',headers=header,timeout=1).json()
+
+			access_kyoshin = True
 
 			alertflg=''
 			if 'alertflg' in res:
@@ -240,10 +243,10 @@ class Pushover(rs.ConsumerThread):
 
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
-			msg='地震発生の確認ができませんでした。'
+			msg='強震モニターの接続が失敗しました'
 			find_kyoshin = False
 		
-		return msg, intensity, find_kyoshin
+		return msg, intensity, find_kyoshin, access_kyoshin
 
 	def _when_alarm(self, d):
 		'''
@@ -256,11 +259,11 @@ class Pushover(rs.ConsumerThread):
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 
 		for count in range(2):
-			kyoshin_msg, intensity, find_kyoshin = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
 			if count==0:
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 			else:
-				if find_kyoshin:
+				if find_kyoshin or not access_kyoshin:
 					message = kyoshin_msg
 				else:
 					message = '地震は発生していないと思われます。'
