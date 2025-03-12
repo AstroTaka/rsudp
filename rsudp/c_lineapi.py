@@ -353,7 +353,7 @@ class LINEApi(rs.ConsumerThread):
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			response = None
 			if os.path.exists(imgpath):
-				kyoshin_msg, intensity, find_kyoshin = self.get_kyoshin_msg()
+				kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
 
 				msg = d.decode('utf-8').split('|')
 				already_sent = False

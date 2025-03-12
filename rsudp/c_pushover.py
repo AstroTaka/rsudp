@@ -307,7 +307,7 @@ class Pushover(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
-			kyoshin_msg, intensity, find_kyoshin = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
 
 			imgpath = helpers.get_msg_path(d).split('|')[0]
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
