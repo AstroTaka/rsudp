@@ -243,7 +243,7 @@ class Pushover(rs.ConsumerThread):
 
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
-			msg='強震モニターの接続が失敗しました'
+			msg='強震モニタの接続が失敗したので地震発生の確認ができませんでした。'
 			find_kyoshin = False
 		
 		return msg, intensity, find_kyoshin, access_kyoshin
