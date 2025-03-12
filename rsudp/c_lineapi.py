@@ -221,15 +221,15 @@ class LINEApi(rs.ConsumerThread):
 		find_kyoshin = True
 		try:
 			kyoshin_time = kyoshin_time2
-			res = requests.get(url+kyoshin_time2+'.json',headers=header).json()
+			res = requests.get(url+kyoshin_time2+'.json',headers=header,timeout=1).json()
 
 			if res['result']['message'] != "":
 				kyoshin_time = kyoshin_time1
-				res = requests.get(url+kyoshin_time1+'.json',headers=header).json()
+				res = requests.get(url+kyoshin_time1+'.json',headers=header,timeout=1).json()
 
 			if res['result']['message'] != "":
 				kyoshin_time = kyoshin_time0
-				res = requests.get(url+kyoshin_time0+'.json',headers=header).json()
+				res = requests.get(url+kyoshin_time0+'.json',headers=header,timeout=1).json()
 
 			alertflg=''
 			if 'alertflg' in res:
