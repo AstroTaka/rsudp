@@ -178,7 +178,8 @@ class Pushover(rs.ConsumerThread):
 				return '7'
 
 	def get_kyoshin_msg(self):
-		url = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
+		url1 = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
+		url2 = 'https://www.lmoni.bosai.go.jp/monitor/webservice/hypo/eew/'
 		now = datetime.now()
 		kyoshin_time0 = (now).strftime('%Y%m%d%H%M%S')
 		kyoshin_time1 = (now-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
@@ -188,16 +189,28 @@ class Pushover(rs.ConsumerThread):
 		find_kyoshin = True
 		access_kyoshin = False
 		try:
-			kyoshin_time = kyoshin_time2
-			res = requests.get(url+kyoshin_time2+'.json',headers=header,timeout=1).json()
+			try:
+				kyoshin_time = kyoshin_time2
+				res = requests.get(url1+kyoshin_time2+'.json',headers=header,timeout=1).json()
+			except:
+				printE('%s' % (traceback.format_exc()), self.sender)
+				res = requests.get(url2+kyoshin_time2+'.json',headers=header,timeout=1).json()
 
 			if res['result']['message'] != "":
-				kyoshin_time = kyoshin_time1
-				res = requests.get(url+kyoshin_time1+'.json',headers=header,timeout=1).json()
+				try:
+					kyoshin_time = kyoshin_time1
+					res = requests.get(url1+kyoshin_time1+'.json',headers=header,timeout=1).json()
+				except:
+					printE('%s' % (traceback.format_exc()), self.sender)
+					res = requests.get(url2+kyoshin_time1+'.json',headers=header,timeout=1).json()
 
 			if res['result']['message'] != "":
-				kyoshin_time = kyoshin_time0
-				res = requests.get(url+kyoshin_time0+'.json',headers=header,timeout=1).json()
+				try:
+					kyoshin_time = kyoshin_time0
+					res = requests.get(url1+kyoshin_time0+'.json',headers=header,timeout=1).json()
+				except:
+					printE('%s' % (traceback.format_exc()), self.sender)
+					res = requests.get(url2+kyoshin_time1+'.json',headers=header,timeout=1).json()
 
 			access_kyoshin = True
 
@@ -243,7 +256,7 @@ class Pushover(rs.ConsumerThread):
 
 		except:
 			printE('%s' % (traceback.format_exc()), self.sender)
-			msg='強震モニタの接続が失敗したので地震発生の確認ができませんでした。'
+			msg='地震情報にアクセス出来ませんでした。'
 			find_kyoshin = False
 		
 		return msg, intensity, find_kyoshin, access_kyoshin
