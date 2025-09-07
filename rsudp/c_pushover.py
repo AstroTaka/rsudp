@@ -52,14 +52,15 @@ class Pushover(rs.ConsumerThread):
 				"priority": priority,
 				"retry": 30,
 				"expire": 1800,
-				"sound": "siren"
+				"sound": "Pluse"
 			}
 		else:
 			data = {
 				"token": self.token,
 				"user": self.user,
 				"message": msg,
-				"priority": priority
+				"priority": priority,
+				"sound": "Pluse"
 			}
 		res = ''
 		with open(filename, 'rb') as f:
@@ -78,7 +79,7 @@ class Pushover(rs.ConsumerThread):
 				"priority": priority,
 				"retry": 30,
 				"expire": 1800,
-				"sound": "siren"
+				"sound": "Pluse"
 			}
 		else:
 			data = {
@@ -86,6 +87,7 @@ class Pushover(rs.ConsumerThread):
 				"user": self.user,
 				"message": msg,
 				"priority": priority,
+				"sound": "Pluse"
 			}
 
 		res = ''
@@ -328,10 +330,10 @@ class Pushover(rs.ConsumerThread):
 				msg = d.decode('utf-8').split('|')
 
 				priority = 0
-				if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])) or intensity >= 2.5:
-					priority=1
-					if not (('震度３' in msg[1]) or ('震度４' in msg[1])) or intensity >= 4.5:
-						priority=2
+				if intensity >= 3.5:
+					priority = 1
+					if intensity >= 4.5:
+						priority = 2 
 
 				if self.send_over_shindo3 and priority == 0:
 					printM('Do not send Pushover, becuase Shindo is less than 3.', sender=self.sender)
