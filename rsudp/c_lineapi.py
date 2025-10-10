@@ -46,7 +46,7 @@ class LINEApi(rs.ConsumerThread):
 
 		printM('Starting.', self.sender)
 
-	def line_api_send_image(self, filename, msg, token, user):
+	def line_api_send_image(self, filename, msg, token, user, access_kyoshin, kyoshin_time):
 		line_image_enable = False
 
 		try:
@@ -69,7 +69,86 @@ class LINEApi(rs.ConsumerThread):
             "Authorization": "Bearer " + token
         }
 	
-		if line_image_enable:
+		if access_kyoshin:
+			if line_image_enable:
+				kyoshin_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:7]+'/'+kyoshin_time+'.jma_s.gif'
+				data = {
+					"to": user,
+					"messages":[
+						{
+							"type": "text",
+							"text": msg
+						},
+						{
+							"type": "image",
+							"originalContentUrl": image_url,
+							"previewImageUrl": image_url
+						},
+						{
+							"type": "image",
+							"originalContentUrl": kyoshin_url,
+							"previewImageUrl": kyoshin_url
+						}
+					]
+				}
+			else:
+				data = {
+					"to": user,
+					"messages":[
+						{
+							"type": "text",
+							"text": msg
+						},
+						{
+							"type": "image",
+							"originalContentUrl": kyoshin_url,
+							"previewImageUrl": kyoshin_url
+						}
+					]
+				}
+		else:
+			if line_image_enable:
+				data = {
+					"to": user,
+					"messages":[
+						{
+							"type": "text",
+							"text": msg
+						},
+						{
+							"type": "image",
+							"originalContentUrl": image_url,
+							"previewImageUrl": image_url
+						}
+					]
+				}
+			else:
+				data = {
+					"to": user,
+					"messages":[
+						{
+							"type": "text",
+							"text": msg
+						}
+					]
+				}
+
+		line_response = requests.post(line_url,
+                                      headers=line_headers,json=data).text
+		printM('Post response: %s' % (line_response),self.sender)
+	
+		return line_response
+
+	def line_api_send_message(self, msg, token, user, access_kyoshin, kyoshin_time):
+		line_url = 'https://api.line.me/v2/bot/message/push'
+
+		line_headers = {
+            "Content_Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+	
+		if access_kyoshin:
+			kyoshin_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:7]+'/'+kyoshin_time+'.jma_s.gif'
 			data = {
 				"to": user,
 				"messages":[
@@ -79,8 +158,8 @@ class LINEApi(rs.ConsumerThread):
 					},
 					{
 						"type": "image",
-						"originalContentUrl": image_url,
-						"previewImageUrl": image_url
+						"originalContentUrl": kyoshin_url,
+						"previewImageUrl": kyoshin_url
 					}
 				]
 			}
@@ -94,30 +173,7 @@ class LINEApi(rs.ConsumerThread):
 					}
 				]
 			}
-		
-		line_response = requests.post(line_url,
-                                      headers=line_headers,json=data).text
-		printM('Post response: %s' % (line_response),self.sender)
-	
-		return line_response
 
-	def line_api_send_message(self, msg, token, user):
-		line_url = 'https://api.line.me/v2/bot/message/push'
-
-		line_headers = {
-            "Content_Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-	
-		data = {
-			"to": user,
-			"messages":[
-				{
-					"type": "text",
-					"text": msg
-				}
-			]
-		}
 		
 		line_response = requests.post(line_url,
                                       headers=line_headers,json=data).text
@@ -221,6 +277,7 @@ class LINEApi(rs.ConsumerThread):
 		intensity = 0.0
 		find_kyoshin = True
 		access_kyoshin = False
+		kyoshin_time = ''
 		try:
 			try:
 				kyoshin_time = kyoshin_time2
@@ -292,7 +349,7 @@ class LINEApi(rs.ConsumerThread):
 			msg='地震情報にアクセス出来ませんでした。'
 			find_kyoshin = False
 		
-		return msg, intensity, find_kyoshin, access_kyoshin
+		return msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time
 
 	def _when_alarm(self, d):
 		'''
@@ -304,7 +361,7 @@ class LINEApi(rs.ConsumerThread):
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 
 		for count in range(2):
-			kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time = self.get_kyoshin_msg()
 			if count==0:
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 			else:
@@ -316,7 +373,7 @@ class LINEApi(rs.ConsumerThread):
 			if self.token1 != '':
 				try:
 					printM('Sending alert...', sender=self.sender)
-					self.line_api_send_message(message, self.token1, self.user1)
+					self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, kyoshin_time)
 					printM('Sent LINE API: %s' % (message), sender=self.sender)
 
 				except Exception as e:
@@ -324,7 +381,7 @@ class LINEApi(rs.ConsumerThread):
 					try:
 						printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
 						time.sleep(5)
-						self.line_api_send_message(message, self.token1, self.user1)
+						self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, kyoshin_time)
 						printM('Sent LINE API: %s' % (message), sender=self.sender)
 					except Exception as e:
 						printE('Could not send alert - %s' % (e), sender=self.sender)
@@ -334,7 +391,7 @@ class LINEApi(rs.ConsumerThread):
 			if intensity >= 3.5 and self.token2 != '':
 				try:
 					printM('Sending alert...', sender=self.sender)
-					self.line_api_send_message(message, self.token2, self.user2)
+					self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, kyoshin_time)
 					printM('Sent LINE API: %s' % (message), sender=self.sender)
 
 				except Exception as e:
@@ -342,7 +399,7 @@ class LINEApi(rs.ConsumerThread):
 					try:
 						printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
 						time.sleep(5)
-						self.line_api_send_message(message, self.token2, self.user2)
+						self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, kyoshin_time)
 						printM('Sent LINE API: %s' % (message), sender=self.sender)
 					except Exception as e:
 						printE('Could not send alert - %s' % (e), sender=self.sender)
@@ -366,7 +423,7 @@ class LINEApi(rs.ConsumerThread):
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
 			response = None
 			if os.path.exists(imgpath):
-				kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
+				kyoshin_msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time = self.get_kyoshin_msg()
 
 				msg = d.decode('utf-8').split('|')
 				already_sent = False
@@ -376,7 +433,7 @@ class LINEApi(rs.ConsumerThread):
 						message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s\n' % (self.message1, self.last_event_str, kyoshin_msg)
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
-							self.line_api_send_image(imgpath, message+self.location_name+'の実際の震度：'+msg[1], self.token2, self.user2)
+							self.line_api_send_image(imgpath, message+self.location_name+'の実際の震度：'+msg[1], self.token2, self.user2, access_kyoshin, kyoshin_time)
 							printM('Sent image', sender=self.sender)
 							already_sent = True
 						except Exception as e:
@@ -385,7 +442,7 @@ class LINEApi(rs.ConsumerThread):
 								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 								time.sleep(5.1)
 								printM('Uploading image to LINE API (2nd try) %s' % (imgpath), self.sender)
-								self.line_api_send_image(imgpath, message+self.location_name+'の実際の震度：'+msg[1], self.token2, self.user2)
+								self.line_api_send_image(imgpath, message+self.location_name+'の実際の震度：'+msg[1], self.token2, self.user2, access_kyoshin, kyoshin_time)
 								printM('Sent image', sender=self.sender)
 								already_sent = True
 
@@ -399,7 +456,7 @@ class LINEApi(rs.ConsumerThread):
 					if not (('震度０' in msg[1]) or ('震度１' in msg[1]) or ('震度２' in msg[1])) or "_10" in imgpath or intensity >= 2.5:
 						try:
 							printM('Uploading image to LINE API %s' % (imgpath), self.sender)
-							self.line_api_send_image(imgpath, kyoshin_msg+'\n'+self.location_name+'の実際の震度：'+msg[1], self.token1, self.user1)
+							self.line_api_send_image(imgpath, kyoshin_msg+'\n'+self.location_name+'の実際の震度：'+msg[1], self.token1, self.user1, access_kyoshin, kyoshin_time)
 							printM('Sent image', sender=self.sender)
 						except Exception as e:
 							printE('Could not send image - %s' % (e), sender=self.sender)
@@ -407,7 +464,7 @@ class LINEApi(rs.ConsumerThread):
 								printM('Waiting 5 seconds and trying to send again...', sender=self.sender)
 								time.sleep(5.1)
 								printM('Uploading image to LINE API (2nd try) %s' % (imgpath), self.sender)
-								self.line_api_send_image(imgpath, kyoshin_msg+'\n'+self.location_name+'の実際の震度：'+msg[1], self.token1, self.user1)
+								self.line_api_send_image(imgpath, kyoshin_msg+'\n'+self.location_name+'の実際の震度：'+msg[1], self.token1, self.user1, access_kyoshin, kyoshin_time)
 								printM('Sent image', sender=self.sender)
 
 							except Exception as e:
