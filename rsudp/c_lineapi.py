@@ -70,8 +70,8 @@ class LINEApi(rs.ConsumerThread):
         }
 	
 		if access_kyoshin:
+			kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
 			if line_image_enable:
-				kyoshin_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:7]+'/'+kyoshin_time+'.jma_s.gif'
 				data = {
 					"to": user,
 					"messages":[
@@ -148,7 +148,7 @@ class LINEApi(rs.ConsumerThread):
         }
 	
 		if access_kyoshin:
-			kyoshin_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:7]+'/'+kyoshin_time+'.jma_s.gif'
+			kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
 			data = {
 				"to": user,
 				"messages":[
