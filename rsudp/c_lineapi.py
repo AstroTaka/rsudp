@@ -93,7 +93,7 @@ class LINEApi(rs.ConsumerThread):
 						break
 					except:
 						pass
-					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+					kyoshin_time_tmp = (datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
 				if not find_image:
 					break
 
@@ -108,7 +108,7 @@ class LINEApi(rs.ConsumerThread):
 						break
 					except:
 						pass
-					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+					kyoshin_time_tmp = (datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
 				if not find_image:
 					break
 
@@ -227,7 +227,7 @@ class LINEApi(rs.ConsumerThread):
 						break
 					except:
 						pass
-					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+					kyoshin_time_tmp = (datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
 				if not find_image:
 					break
 
@@ -242,7 +242,7 @@ class LINEApi(rs.ConsumerThread):
 						break
 					except:
 						pass
-					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+					kyoshin_time_tmp = (datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
 				if not find_image:
 					break
 
