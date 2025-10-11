@@ -11,6 +11,10 @@ import shutil
 import hashlib
 import numpy as np
 
+from PIL import Image
+import requests
+import io
+
 #import telegram as tg
 
 class LINEApi(rs.ConsumerThread):
@@ -70,7 +74,51 @@ class LINEApi(rs.ConsumerThread):
         }
 	
 		if access_kyoshin:
-			kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+			kyoshin_url = ''
+			eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.eew.gif'
+			jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+			map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
+			level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
+
+			while True:
+				try:
+					map_img = Image.open(io.BytesIO(requests.get(map_url).content)).convert("RGBA")
+				except:
+					break
+				try:
+					ima_img = Image.open(io.BytesIO(requests.get(jma_url).content)).convert("RGBA")
+					map_img.paste(ima_img,(0,0), ima_img)
+					ima_img.close()
+				except:
+					map_img.close()
+					break
+
+				try:
+					eew_img = Image.open(io.BytesIO(requests.get(eew_url).content)).convert("RGBA")
+					map_img.paste(eew_img,(0,0), eew_img)
+					eew_img.close()
+				except:
+					map_img.close()
+					break
+
+				try:
+					level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
+					map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height), level_img)
+					level_img.close()
+				except:
+					map_img.close()
+					break
+
+				kyoshin_filename = hashlib.sha256((kyoshin_time+'.jma_s').encode()).hexdigest() + '.png'
+				dst_file_full_path = self.image_dir_path.rstrip('/') + '/' + kyoshin_filename
+				kyoshin_url = self.image_url_path.rstrip('/') + '/' + kyoshin_filename
+				map_img.save(dst_file_full_path)
+				map_img.close()
+				break
+
+			if kyoshin_url == '':
+				kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+			
 			if line_image_enable:
 				data = {
 					"to": user,
@@ -139,7 +187,7 @@ class LINEApi(rs.ConsumerThread):
 	
 		return line_response
 
-	def line_api_send_message(self, msg, token, user, access_kyoshin, kyoshin_time):
+	def line_api_send_message(self, msg, token, user, access_kyoshin, enable_send_shindo_image, kyoshin_time):
 		line_url = 'https://api.line.me/v2/bot/message/push'
 
 		line_headers = {
@@ -148,7 +196,52 @@ class LINEApi(rs.ConsumerThread):
         }
 	
 		if access_kyoshin:
-			kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+			kyoshin_url = ''
+			if enable_send_shindo_image:
+				eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.eew.gif'
+				jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+				map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
+				level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
+
+				while True:
+					try:
+						map_img = Image.open(io.BytesIO(requests.get(map_url).content)).convert("RGBA")
+					except:
+						break
+					try:
+						ima_img = Image.open(io.BytesIO(requests.get(jma_url).content)).convert("RGBA")
+						map_img.paste(ima_img,(0,0), ima_img)
+						ima_img.close()
+					except:
+						map_img.close()
+						break
+
+					try:
+						eew_img = Image.open(io.BytesIO(requests.get(eew_url).content)).convert("RGBA")
+						map_img.paste(eew_img,(0,0), eew_img)
+						eew_img.close()
+					except:
+						map_img.close()
+						break
+
+					try:
+						level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
+						map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height), level_img)
+						level_img.close()
+					except:
+						map_img.close()
+						break
+
+					kyoshin_filename = hashlib.sha256((kyoshin_time+'.jma_s').encode()).hexdigest() + '.png'
+					dst_file_full_path = self.image_dir_path.rstrip('/') + '/' + kyoshin_filename
+					kyoshin_url = self.image_url_path.rstrip('/') + '/' + kyoshin_filename
+					map_img.save(dst_file_full_path)
+					map_img.close()
+					break
+
+			if kyoshin_url == '':
+				kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
+
 			data = {
 				"to": user,
 				"messages":[
@@ -364,7 +457,9 @@ class LINEApi(rs.ConsumerThread):
 			kyoshin_msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time = self.get_kyoshin_msg()
 			if count==0:
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
+				enable_send_shindo_image = False
 			else:
+				enable_send_shindo_image = True
 				if find_kyoshin or not access_kyoshin:
 					message = kyoshin_msg
 				else:
@@ -373,7 +468,7 @@ class LINEApi(rs.ConsumerThread):
 			if self.token1 != '':
 				try:
 					printM('Sending alert...', sender=self.sender)
-					self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, kyoshin_time)
+					self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, enable_send_shindo_image, kyoshin_time)
 					printM('Sent LINE API: %s' % (message), sender=self.sender)
 
 				except Exception as e:
@@ -381,7 +476,7 @@ class LINEApi(rs.ConsumerThread):
 					try:
 						printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
 						time.sleep(5)
-						self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, kyoshin_time)
+						self.line_api_send_message(message, self.token1, self.user1, access_kyoshin, enable_send_shindo_image, kyoshin_time)
 						printM('Sent LINE API: %s' % (message), sender=self.sender)
 					except Exception as e:
 						printE('Could not send alert - %s' % (e), sender=self.sender)
@@ -391,7 +486,7 @@ class LINEApi(rs.ConsumerThread):
 			if intensity >= 3.5 and self.token2 != '':
 				try:
 					printM('Sending alert...', sender=self.sender)
-					self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, kyoshin_time)
+					self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, enable_send_shindo_image, kyoshin_time)
 					printM('Sent LINE API: %s' % (message), sender=self.sender)
 
 				except Exception as e:
@@ -399,7 +494,7 @@ class LINEApi(rs.ConsumerThread):
 					try:
 						printE('Waiting 5 seconds and trying to send again...', sender=self.sender, spaces=True)
 						time.sleep(5)
-						self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, kyoshin_time)
+						self.line_api_send_message(message, self.token2, self.user2, access_kyoshin, enable_send_shindo_image, kyoshin_time)
 						printM('Sent LINE API: %s' % (message), sender=self.sender)
 					except Exception as e:
 						printE('Could not send alert - %s' % (e), sender=self.sender)
