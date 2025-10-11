@@ -115,7 +115,7 @@ class LINEApi(rs.ConsumerThread):
 				try:
 					level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
 					level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
-					map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height-1), level_img)
+					map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height-3), level_img)
 					level_img.close()
 				except:
 					map_img.close()
@@ -250,7 +250,7 @@ class LINEApi(rs.ConsumerThread):
 					try:
 						level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
 						level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
-						map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height-1), level_img)
+						map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height-3), level_img)
 						level_img.close()
 					except:
 						map_img.close()
