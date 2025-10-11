@@ -75,33 +75,45 @@ class LINEApi(rs.ConsumerThread):
 	
 		if access_kyoshin:
 			kyoshin_url = ''
-			eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.eew.gif'
-			jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
-			map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
-			level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
-
 			while True:
 				try:
+					map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
 					map_img = Image.open(io.BytesIO(requests.get(map_url).content)).convert("RGBA")
 				except:
 					break
-				try:
-					ima_img = Image.open(io.BytesIO(requests.get(jma_url).content)).convert("RGBA")
-					map_img.paste(ima_img,(0,0), ima_img)
-					ima_img.close()
-				except:
-					map_img.close()
+				kyoshin_time_tmp = kyoshin_time
+				find_image = False
+				for count in range(3):
+					try:
+						jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time_tmp[0:8]+'/'+kyoshin_time_tmp+'.jma_s.gif'
+						ima_img = Image.open(io.BytesIO(requests.get(jma_url).content)).convert("RGBA")
+						map_img.paste(ima_img,(0,0), ima_img)
+						ima_img.close()
+						find_image = True
+						break
+					except:
+						pass
+					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+				if not find_image:
+					break
+
+				find_image = False
+				for count in range(3):
+					try:
+						eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time_tmp[0:8]+'/'+kyoshin_time_tmp+'.eew.gif'
+						eew_img = Image.open(io.BytesIO(requests.get(eew_url).content)).convert("RGBA")
+						map_img.paste(eew_img,(0,0), eew_img)
+						eew_img.close()
+						find_image = True
+						break
+					except:
+						pass
+					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+				if not find_image:
 					break
 
 				try:
-					eew_img = Image.open(io.BytesIO(requests.get(eew_url).content)).convert("RGBA")
-					map_img.paste(eew_img,(0,0), eew_img)
-					eew_img.close()
-				except:
-					map_img.close()
-					break
-
-				try:
+					level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
 					level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
 					map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height), level_img)
 					level_img.close()
@@ -197,47 +209,58 @@ class LINEApi(rs.ConsumerThread):
 	
 		if access_kyoshin:
 			kyoshin_url = ''
-			if enable_send_shindo_image:
-				eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.eew.gif'
-				jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
-				map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
-				level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
-
-				while True:
+			while True:
+				try:
+					map_url = 'http://www.kmoni.bosai.go.jp/data/map_img/CommonImg/base_map_w.gif'
+					map_img = Image.open(io.BytesIO(requests.get(map_url).content)).convert("RGBA")
+				except:
+					break
+				kyoshin_time_tmp = kyoshin_time
+				find_image = False
+				for count in range(3):
 					try:
-						map_img = Image.open(io.BytesIO(requests.get(map_url).content)).convert("RGBA")
-					except:
-						break
-					try:
+						jma_url = 'http://www.kmoni.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time_tmp[0:8]+'/'+kyoshin_time_tmp+'.jma_s.gif'
 						ima_img = Image.open(io.BytesIO(requests.get(jma_url).content)).convert("RGBA")
 						map_img.paste(ima_img,(0,0), ima_img)
 						ima_img.close()
-					except:
-						map_img.close()
+						find_image = True
 						break
+					except:
+						pass
+					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+				if not find_image:
+					break
 
+				find_image = False
+				for count in range(3):
 					try:
+						eew_url = 'http://www.kmoni.bosai.go.jp/data/map_img/PSWaveImg/eew/'+kyoshin_time_tmp[0:8]+'/'+kyoshin_time_tmp+'.eew.gif'
 						eew_img = Image.open(io.BytesIO(requests.get(eew_url).content)).convert("RGBA")
 						map_img.paste(eew_img,(0,0), eew_img)
 						eew_img.close()
-					except:
-						map_img.close()
+						find_image = True
 						break
-
-					try:
-						level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
-						map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height), level_img)
-						level_img.close()
 					except:
-						map_img.close()
-						break
+						pass
+					kyoshin_time_tmp = (datetime.datetime.strptime(kyoshin_time_tmp, '%Y%m%d%H%M%S')-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+				if not find_image:
+					break
 
-					kyoshin_filename = hashlib.sha256((kyoshin_time+'.jma_s').encode()).hexdigest() + '.png'
-					dst_file_full_path = self.image_dir_path.rstrip('/') + '/' + kyoshin_filename
-					kyoshin_url = self.image_url_path.rstrip('/') + '/' + kyoshin_filename
-					map_img.save(dst_file_full_path)
+				try:
+					level_url = 'http://www.kmoni.bosai.go.jp/data/map_img/ScaleImg/nied_jma_s_w_scale.gif'
+					level_img = Image.open(io.BytesIO(requests.get(level_url).content)).convert("RGBA")
+					map_img.paste(level_img,(map_img.width-level_img.width+10,map_img.height-level_img.height), level_img)
+					level_img.close()
+				except:
 					map_img.close()
 					break
+
+				kyoshin_filename = hashlib.sha256((kyoshin_time+'.jma_s').encode()).hexdigest() + '.png'
+				dst_file_full_path = self.image_dir_path.rstrip('/') + '/' + kyoshin_filename
+				kyoshin_url = self.image_url_path.rstrip('/') + '/' + kyoshin_filename
+				map_img.save(dst_file_full_path)
+				map_img.close()
+				break
 
 			if kyoshin_url == '':
 				kyoshin_url = 'https://smi.lmoniexp.bosai.go.jp/data/map_img/RealTimeImg/jma_s/'+kyoshin_time[0:8]+'/'+kyoshin_time+'.jma_s.gif'
