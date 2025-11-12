@@ -404,8 +404,22 @@ class LINEApi(rs.ConsumerThread):
 					kyoshin_filename = hashlib.sha256((kyoshin_time+'.jma_s').encode()).hexdigest() + '.png'
 					dst_file_full_path = self.image_dir_path.rstrip('/') + '/' + kyoshin_filename
 					kyoshin_url = self.image_url_path.rstrip('/') + '/' + kyoshin_filename
-					map_img.save(dst_file_full_path)
+
+					msg1=''
+					for line in msg.splitlines():
+						msg1 = msg1 + '\n'.join(fw_wrap(line,45,replace_whitespace=False))+'\n'
+					line = msg1.count('\n')
+					width, height = map_img.size
+					map_img_new = Image.new(map_img.mode, (width, height+8+18*line), (254,253,253))
+					map_img_new.paste(map_img,(0,0))
 					map_img.close()
+
+					font = ImageFont.truetype('KosugiMaru-Regular.ttf', 14)
+					draw = ImageDraw.Draw(map_img_new)
+					draw.text((4,height+8),msg1,'black',font=font)
+
+					map_img_new.save(dst_file_full_path)
+					map_img_new.close()
 					break
 
 			if kyoshin_url == '':
