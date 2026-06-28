@@ -544,7 +544,7 @@ class LINEApi(rs.ConsumerThread):
 
 	def get_kyoshin_msg(self):
 		url1 = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
-		url2 = 'https://www.lmoni.bosai.go.jp/monitor/webservice/hypo/eew/'
+		url2 = 'https://weather-kyoshin.west.edge.storage-yahoo.jp/RealTimeData/'
 		now = datetime.now()
 		kyoshin_time0 = (now).strftime('%Y%m%d%H%M%S')
 		kyoshin_time1 = (now-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
@@ -554,31 +554,56 @@ class LINEApi(rs.ConsumerThread):
 		find_kyoshin = True
 		access_kyoshin = False
 		kyoshin_time = ''
+		data_source = ''
+
 		try:
 			try:
 				kyoshin_time = kyoshin_time2
 				res = requests.get(url1+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				data_source = 'NIED' # 防災科研
 			except:
 				printE('%s' % (traceback.format_exc()), self.sender)
-				res = requests.get(url2+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				# --- Yahoo!のURL階層（日付フォルダ）に合わせて取得 ---
+				res = requests.get(url2+kyoshin_time2[0:8]+'/'+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				data_source = 'Yahoo!' # Yahoo!
 
 			if res['result']['message'] != "":
 				try:
 					kyoshin_time = kyoshin_time1
 					res = requests.get(url1+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					data_source = 'NIED'
 				except:
 					printE('%s' % (traceback.format_exc()), self.sender)
-					res = requests.get(url2+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					res = requests.get(url2+kyoshin_time1[0:8]+'/'+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					data_source = 'Yahoo!'
 
 			if res['result']['message'] != "":
 				try:
 					kyoshin_time = kyoshin_time0
 					res = requests.get(url1+kyoshin_time0+'.json',headers=header,timeout=1).json()
+					data_source = 'NIED'
 				except:
 					printE('%s' % (traceback.format_exc()), self.sender)
-					res = requests.get(url2+kyoshin_time0+'.json',headers=header,timeout=1).json()
+					res = requests.get(url2+kyoshin_time0[0:8]+'/'+kyoshin_time0+'.json',headers=header,timeout=1).json()
+					data_source = 'Yahoo!'
 
 			access_kyoshin = True
+
+			if 'hypoInfo' in res and res['hypoInfo'] is not None:
+				yahoo_eew = res['hypoInfo']
+				res = {
+					"result": {"status": "success", "message": ""},
+					"region_name": yahoo_eew.get('regionName', ''),
+					"magunitude": yahoo_eew.get('magnitude', '0.0'),
+					"depth": yahoo_eew.get('depth', '0km'),
+					"calcintensity": yahoo_eew.get('calcIntensity', '0'),
+					"report_num": yahoo_eew.get('reportNum', '1'),
+					"is_final": yahoo_eew.get('isFinal', False),
+					"latitude": yahoo_eew.get('latitude', '0.0'),
+					"longitude": yahoo_eew.get('longitude', '0.0')
+				}
+				if 'items' in yahoo_eew and len(yahoo_eew['items']) > 0:
+					res['alertflg'] = '警報' if yahoo_eew['items'][0].get('isAlert', False) else '予報'
 
 			alertflg=''
 			if 'alertflg' in res:
@@ -615,6 +640,9 @@ class LINEApi(rs.ConsumerThread):
 				intensity = 2.68 + 1.72 * np.log10(pgv400)
 				shindo = self.getShindoName(intensity)
 				msg = msg + '\n' + self.location_name + 'の最大予測震度：' + shindo + '(' + "{:.1f}".format(intensity) +')'
+
+			if data_source != '':
+				msg = msg + ' (' + data_source + ')'
 
 			if res['result']['message'] != "":
 				msg = '地震発生の確認ができませんでした。\n(' + kyoshin_time + ')'

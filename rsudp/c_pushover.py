@@ -181,7 +181,7 @@ class Pushover(rs.ConsumerThread):
 
 	def get_kyoshin_msg(self):
 		url1 = 'http://www.kmoni.bosai.go.jp/webservice/hypo/eew/'
-		url2 = 'https://www.lmoni.bosai.go.jp/monitor/webservice/hypo/eew/'
+		url2 = 'https://weather-kyoshin.west.edge.storage-yahoo.jp/RealTimeData/'
 		now = datetime.now()
 		kyoshin_time0 = (now).strftime('%Y%m%d%H%M%S')
 		kyoshin_time1 = (now-timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
@@ -190,31 +190,57 @@ class Pushover(rs.ConsumerThread):
 		intensity = 0.0
 		find_kyoshin = True
 		access_kyoshin = False
+		kyoshin_time = ''
+		data_source = ''
+
 		try:
 			try:
 				kyoshin_time = kyoshin_time2
 				res = requests.get(url1+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				data_source = 'NIED' # 防災科研
 			except:
 				printE('%s' % (traceback.format_exc()), self.sender)
-				res = requests.get(url2+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				# --- Yahoo!のURL階層（日付フォルダ）に合わせて取得 ---
+				res = requests.get(url2+kyoshin_time2[0:8]+'/'+kyoshin_time2+'.json',headers=header,timeout=1).json()
+				data_source = 'Yahoo!' # Yahoo!
 
 			if res['result']['message'] != "":
 				try:
 					kyoshin_time = kyoshin_time1
 					res = requests.get(url1+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					data_source = 'NIED'
 				except:
 					printE('%s' % (traceback.format_exc()), self.sender)
-					res = requests.get(url2+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					res = requests.get(url2+kyoshin_time1[0:8]+'/'+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					data_source = 'Yahoo!'
 
 			if res['result']['message'] != "":
 				try:
 					kyoshin_time = kyoshin_time0
 					res = requests.get(url1+kyoshin_time0+'.json',headers=header,timeout=1).json()
+					data_source = 'NIED'
 				except:
 					printE('%s' % (traceback.format_exc()), self.sender)
-					res = requests.get(url2+kyoshin_time1+'.json',headers=header,timeout=1).json()
+					res = requests.get(url2+kyoshin_time0[0:8]+'/'+kyoshin_time0+'.json',headers=header,timeout=1).json()
+					data_source = 'Yahoo!'
 
 			access_kyoshin = True
+
+			if 'hypoInfo' in res and res['hypoInfo'] is not None:
+				yahoo_eew = res['hypoInfo']
+				res = {
+					"result": {"status": "success", "message": ""},
+					"region_name": yahoo_eew.get('regionName', ''),
+					"magunitude": yahoo_eew.get('magnitude', '0.0'),
+					"depth": yahoo_eew.get('depth', '0km'),
+					"calcintensity": yahoo_eew.get('calcIntensity', '0'),
+					"report_num": yahoo_eew.get('reportNum', '1'),
+					"is_final": yahoo_eew.get('isFinal', False),
+					"latitude": yahoo_eew.get('latitude', '0.0'),
+					"longitude": yahoo_eew.get('longitude', '0.0')
+				}
+				if 'items' in yahoo_eew and len(yahoo_eew['items']) > 0:
+					res['alertflg'] = '警報' if yahoo_eew['items'][0].get('isAlert', False) else '予報'
 
 			alertflg=''
 			if 'alertflg' in res:
@@ -229,7 +255,7 @@ class Pushover(rs.ConsumerThread):
 			msg = ('震源地:'+res['region_name']+'/M'+res['magunitude']+'/深さ'+
 				res['depth']+'/最大予測震度'+res['calcintensity']+'/'+
 				report_num+alertflg)
-
+			
 			try:
 				latitude = float(res['latitude'])
 				longitude = float(res['longitude'])
@@ -252,6 +278,9 @@ class Pushover(rs.ConsumerThread):
 				shindo = self.getShindoName(intensity)
 				msg = msg + '\n' + self.location_name + 'の最大予測震度：' + shindo + '(' + "{:.1f}".format(intensity) +')'
 
+			if data_source != '':
+				msg = msg + ' (' + data_source + ')'
+
 			if res['result']['message'] != "":
 				msg = '地震発生の確認ができませんでした。\n(' + kyoshin_time + ')'
 				find_kyoshin = False
@@ -261,7 +290,7 @@ class Pushover(rs.ConsumerThread):
 			msg='地震情報にアクセス出来ませんでした。'
 			find_kyoshin = False
 		
-		return msg, intensity, find_kyoshin, access_kyoshin
+		return msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time
 
 	def _when_alarm(self, d):
 		'''
@@ -274,7 +303,7 @@ class Pushover(rs.ConsumerThread):
 		self.last_event_str = '%s' % ((event_time+(3600*9)).strftime(self.fmt)[:22])
 
 		for count in range(2):
-			kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time = self.get_kyoshin_msg()
 			if count==0:
 				message = '%s\n%s JST\nhttp://www.kmoni.bosai.go.jp/\n%s' % (self.message1, self.last_event_str, kyoshin_msg)
 			else:
@@ -322,7 +351,7 @@ class Pushover(rs.ConsumerThread):
 		:param bytes d: queue message
 		'''
 		if self.send_images:
-			kyoshin_msg, intensity, find_kyoshin, access_kyoshin = self.get_kyoshin_msg()
+			kyoshin_msg, intensity, find_kyoshin, access_kyoshin, kyoshin_time = self.get_kyoshin_msg()
 
 			imgpath = helpers.get_msg_path(d).split('|')[0]
 			printM('imgpath:%s' %(imgpath),sender=self.sender)
